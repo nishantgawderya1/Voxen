@@ -1,6 +1,7 @@
 import axios from "axios";
 import { createContext, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import httpStatus from "http-status";
 
 export const AuthContext = createContext({});
 
@@ -22,6 +23,21 @@ export const AuthProvider = ({ children }) => {
         username: username,
         password: password,
       });
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  const handleLogin = async (username, password) => {
+    try {
+      let request = await client.post("/login", {
+        username: username,
+        password: password,
+      });
+
+      if (request.status === httpStatus.OK) {
+        localStorage.setItem("token", request.data.token);
+      }
     } catch (err) {
       throw err;
     }
