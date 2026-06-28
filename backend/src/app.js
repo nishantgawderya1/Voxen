@@ -13,6 +13,7 @@ const app = express();
 app.use(express.json({ limit: "49kb" }));
 app.use(express.urlencoded({ limit: "49kb", extended: true }));
 app.use(cors());
+app.use("/api/v1/users", userRoutes);
 
 const server = createServer(app);
 const io = connectToSocket(server);
