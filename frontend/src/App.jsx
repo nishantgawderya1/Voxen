@@ -3,6 +3,7 @@ import LandingPage from "./pages/LandingPage.jsx";
 import Features from "./pages/Features.jsx";
 import Pricing from "./pages/Pricing.jsx";
 import Authentication from "./pages/Authentication.jsx";
+import { AuthProvider } from "./contexts/AuthContext.jsx";
 import "./App.css";
 
 const Home = () => (
@@ -16,10 +17,12 @@ const Home = () => (
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/auth" element={<Authentication />} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/auth" element={<Authentication />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

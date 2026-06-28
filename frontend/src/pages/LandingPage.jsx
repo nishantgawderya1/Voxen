@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 const LandingPage = () => {
   return (
     <>
@@ -31,12 +33,18 @@ const LandingPage = () => {
             </a>
           </div>
           <div className="flex items-center gap-6">
-            <button className="text-secondary-text hover:text-primary-text transition-colors text-sm font-medium">
+            <Link
+              to="/auth"
+              className="text-secondary-text hover:text-primary-text transition-colors text-sm font-medium"
+            >
               Sign in
-            </button>
-            <button className="bg-primary text-on-primary font-semibold px-5 py-2 rounded-lg text-sm transition-transform active:scale-95">
+            </Link>
+            <Link
+              to="/auth"
+              className="bg-primary text-on-primary font-semibold px-5 py-2 rounded-lg text-sm transition-transform active:scale-95"
+            >
               Start for free
-            </button>
+            </Link>
           </div>
         </div>
       </nav>
