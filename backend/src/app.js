@@ -5,6 +5,7 @@ import { Server } from "socket.io";
 import { createServer } from "http";
 import connectToSocket from "./controllers/socketManager.js";
 import cors from "cors";
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 
