@@ -6,7 +6,7 @@ import httpStatus from "http-status";
 export const AuthContext = createContext({});
 
 const client = axios.create({
-  baseURL: "localhost:8000/api/v1/users",
+  baseURL: "http://localhost:8000/api/v1/users",
 });
 
 export const AuthProvider = ({ children }) => {
@@ -23,6 +23,7 @@ export const AuthProvider = ({ children }) => {
         username: username,
         password: password,
       });
+      return request.data;
     } catch (err) {
       throw err;
     }
@@ -38,6 +39,8 @@ export const AuthProvider = ({ children }) => {
       if (request.status === httpStatus.OK) {
         localStorage.setItem("token", request.data.token);
       }
+
+      return request.data;
     } catch (err) {
       throw err;
     }
@@ -47,6 +50,7 @@ export const AuthProvider = ({ children }) => {
     userData,
     setUserData,
     handleRegister,
+    handleLogin,
   };
 
   return (

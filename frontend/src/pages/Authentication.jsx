@@ -1,7 +1,6 @@
-import { useState } from "react";
-import axios from "axios";
-
-const API = "http://localhost:8000/api/v1/users";
+import { useState, useContext } from "react";
+import { AuthContext } from "../contexts/AuthContext.jsx";
+import { Snackbar } from "@mui/material";
 
 const GoogleIcon = () => (
   <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -31,36 +30,39 @@ const GitHubIcon = () => (
 );
 
 const Authentication = () => {
+  const { handleRegister, handleLogin } = useContext(AuthContext);
+
   const [mode, setMode] = useState("signin");
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const [formState, setFormState] = useState(0);
 
-  const handleSignIn = async (e) => {
-    e.preventDefault();
+  const handleAuth = async () => {
     try {
-      const res = await axios.post(`${API}/login`, {
-        username: email,
-        password,
-      });
-      console.log("login:", res.data);
+      if (formState === 0) {
+        await handleLogin(username, password);
+        setMessage("Logged in successfully");
+        setOpen(true);
+      }
+      if (formState === 1) {
+        let result = await handleRegister(name, username, password);
+        setMessage(result.message);
+        setOpen(true);
+        setMode("signin");
+        setFormState(0);
+      }
     } catch (err) {
-      console.log("login error:", err.response?.data || err.message);
+      setMessage(err.response?.data?.message || "Something went wrong");
+      setOpen(true);
     }
   };
 
-  const handleSignUp = async (e) => {
+  const onSubmit = (e) => {
     e.preventDefault();
-    try {
-      const res = await axios.post(`${API}/register`, {
-        name,
-        username: email,
-        password,
-      });
-      console.log("register:", res.data);
-    } catch (err) {
-      console.log("register error:", err.response?.data || err.message);
-    }
+    handleAuth();
   };
 
   return (
@@ -87,22 +89,22 @@ const Authentication = () => {
               </p>
             </div>
             <div className="auth-card p-xl flex flex-col gap-lg">
-              <form className="flex flex-col gap-md" onSubmit={handleSignIn}>
+              <form className="flex flex-col gap-md" onSubmit={onSubmit}>
                 <div className="flex flex-col gap-xs">
                   <label
                     className="font-label-sm text-label-sm text-on-surface-variant ml-unit"
-                    htmlFor="email"
+                    htmlFor="username"
                   >
-                    Email
+                    Username
                   </label>
                   <input
                     className="input-field rounded-[8px] h-11 px-md font-body-md text-body-md transition-all duration-200"
-                    id="email"
-                    name="email"
-                    placeholder="name@company.com"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    id="username"
+                    name="username"
+                    placeholder="yourusername"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                   />
                 </div>
                 <div className="flex flex-col gap-xs">
@@ -163,7 +165,10 @@ const Authentication = () => {
               Don't have an account?{" "}
               <button
                 className="text-[#7c5cff] font-medium hover:underline"
-                onClick={() => setMode("signup")}
+                onClick={() => {
+                  setMode("signup");
+                  setFormState(1);
+                }}
               >
                 Sign up
               </button>
@@ -198,7 +203,7 @@ const Authentication = () => {
                 </span>
                 <div className="flex-grow border-t border-border-subtle"></div>
               </div>
-              <form className="space-y-lg" onSubmit={handleSignUp}>
+              <form className="space-y-lg" onSubmit={onSubmit}>
                 <div className="space-y-md">
                   <div className="space-y-sm">
                     <label
@@ -219,17 +224,17 @@ const Authentication = () => {
                   <div className="space-y-sm">
                     <label
                       className="font-label-sm text-label-sm text-on-surface-variant"
-                      htmlFor="signup-email"
+                      htmlFor="signup-username"
                     >
-                      Work email
+                      Username
                     </label>
                     <input
                       className="w-full bg-surface-container-lowest border border-border-subtle rounded-[12px] px-md h-11 text-body-md text-on-surface focus:ring-1 focus:ring-[#7c5cff] focus:border-[#7c5cff] transition-all outline-none"
-                      id="signup-email"
-                      placeholder="john@company.com"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      id="signup-username"
+                      placeholder="yourusername"
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
                     />
                   </div>
                   <div className="space-y-sm">
@@ -271,7 +276,10 @@ const Authentication = () => {
               Already have an account?{" "}
               <button
                 className="text-[#7c5cff] font-semibold hover:underline"
-                onClick={() => setMode("signin")}
+                onClick={() => {
+                  setMode("signin");
+                  setFormState(0);
+                }}
               >
                 Sign in
               </button>
@@ -326,6 +334,8 @@ const Authentication = () => {
       {/* Background orbs */}
       <div className="fixed top-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-[#7c5cff]/5 blur-[120px] rounded-full pointer-events-none -z-10"></div>
       <div className="fixed bottom-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-tertiary/5 blur-[100px] rounded-full pointer-events-none -z-10"></div>
+
+      <Snackbar open={open} autoHideDuration={4000} message={message} />
     </div>
   );
 };

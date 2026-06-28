@@ -10,8 +10,8 @@ const register = async (req, res) => {
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res
-        .status(httpStatus.FOUND)
-        .json({ message: "User already exists" });
+        .status(httpStatus.CONFLICT)
+        .json({ message: "Username already taken" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -57,6 +57,10 @@ const login = async (req, res) => {
       user.token = token;
       await user.save();
       return res.status(httpStatus.OK).json({ token: token });
+    } else {
+      return res
+        .status(httpStatus.UNAUTHORIZED)
+        .json({ message: "Invalid password" });
     }
   } catch (e) {
     res
