@@ -2,6 +2,7 @@ import httpStatus from "http-status";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { User } from "../models/userModel.js";
+import { meeting as Meeting } from "../models/meetingModel.js";
 
 const register = async (req, res) => {
   const { name, username, password } = req.body;
@@ -69,5 +70,56 @@ const login = async (req, res) => {
   }
 };
 
-export { register, login };
+const addToActivity = async (req, res) => {
+  const { token, meeting_code } = req.body;
+
+  try {
+    const user = await User.findOne({ token: token });
+
+    if (!user) {
+      return res
+        .status(httpStatus.UNAUTHORIZED)
+        .json({ message: "Invalid token" });
+    }
+
+    const newMeeting = new Meeting({
+      user_id: user.username,
+      meetingCode: meeting_code,
+    });
+
+    await newMeeting.save();
+
+    res
+      .status(httpStatus.CREATED)
+      .json({ message: "Added code to history" });
+  } catch (e) {
+    res
+      .status(httpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: `Something went wrong ${e}` });
+  }
+};
+
+const getAllActivity = async (req, res) => {
+  const { token } = req.query;
+
+  try {
+    const user = await User.findOne({ token: token });
+
+    if (!user) {
+      return res
+        .status(httpStatus.UNAUTHORIZED)
+        .json({ message: "Invalid token" });
+    }
+
+    const meetings = await Meeting.find({ user_id: user.username });
+
+    res.status(httpStatus.OK).json(meetings);
+  } catch (e) {
+    res
+      .status(httpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: `Something went wrong ${e}` });
+  }
+};
+
+export { register, login, addToActivity, getAllActivity };
 

@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useContext, useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
+import { AuthContext } from "../contexts/AuthContext.jsx";
 import "../styles/videoComponent.css";
 
 const server_url = "http://localhost:8000";
@@ -33,6 +34,8 @@ export default function VideoMeet() {
   let [username, setUsername] = useState("");
 
   let router = useNavigate();
+  let { url } = useParams();
+  let { addToUserHistory } = useContext(AuthContext);
 
   let [messages, setMessages] = useState([]);
   let [message, setMessage] = useState("");
@@ -455,6 +458,9 @@ export default function VideoMeet() {
   const connect = () => {
     setAskForUsername(false);
     getMedia();
+    if (url) {
+      addToUserHistory(url).catch((e) => console.log(e));
+    }
   };
 
   return (
