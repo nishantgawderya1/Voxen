@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
+import "../styles/videoComponent.css";
 
 const server_url = "http://localhost:8000";
 
@@ -29,6 +31,8 @@ export default function VideoMeet() {
 
   let [askForUsername, setAskForUsername] = useState(true);
   let [username, setUsername] = useState("");
+
+  let router = useNavigate();
 
   const getPermissions = async () => {
     try {
@@ -327,6 +331,94 @@ export default function VideoMeet() {
     });
   };
 
+  let getDislayMediaSuccess = (stream) => {
+    try {
+      window.localStream.getTracks().forEach((track) => track.stop());
+    } catch (e) {
+      console.log(e);
+    }
+
+    window.localStream = stream;
+    localVideoRef.current.srcObject = stream;
+
+    for (let id in connections) {
+      if (id === socketIdRef.current) continue;
+
+      connections[id].addStream(window.localStream);
+
+      connections[id].createOffer().then((description) => {
+        connections[id]
+          .setLocalDescription(description)
+          .then(() => {
+            socketRef.current.emit(
+              "signal",
+              id,
+              JSON.stringify({ sdp: connections[id].localDescription })
+            );
+          })
+          .catch((e) => console.log(e));
+      });
+    }
+
+    stream.getTracks().forEach(
+      (track) =>
+        (track.onended = () => {
+          setScreen(false);
+
+          try {
+            let tracks = localVideoRef.current.srcObject.getTracks();
+            tracks.forEach((track) => track.stop());
+          } catch (e) {
+            console.log(e);
+          }
+
+          window.localStream = blackSilence();
+          localVideoRef.current.srcObject = window.localStream;
+
+          getUserMedia();
+        })
+    );
+  };
+
+  let getDislayMedia = () => {
+    if (screen) {
+      if (navigator.mediaDevices.getDisplayMedia) {
+        navigator.mediaDevices
+          .getDisplayMedia({ video: true, audio: true })
+          .then(getDislayMediaSuccess)
+          .catch((e) => console.log(e));
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (screen !== undefined) {
+      getDislayMedia();
+    }
+  }, [screen]);
+
+  let handleVideo = () => {
+    setVideo(!video);
+  };
+
+  let handleAudio = () => {
+    setAudio(!audio);
+  };
+
+  let handleScreen = () => {
+    setScreen(!screen);
+  };
+
+  let handleEndCall = () => {
+    try {
+      let tracks = localVideoRef.current.srcObject.getTracks();
+      tracks.forEach((track) => track.stop());
+    } catch (e) {
+      console.log(e);
+    }
+    router("/");
+  };
+
   let getMedia = () => {
     setVideo(videoAvailable);
     setAudio(audioAvailable);
@@ -367,32 +459,77 @@ export default function VideoMeet() {
           ></video>
         </div>
       ) : (
-        <div className="min-h-screen p-6 flex flex-col gap-4">
+        <div className="meetVideoContainer">
+          <div className="conferenceView">
+            {videos.length === 0 && (
+              <div className="emptyConference">
+                Waiting for others to join… open this same link in another tab
+                or share it to invite people.
+              </div>
+            )}
+
+            {videos.map((video) => (
+              <div key={video.socketId}>
+                <video
+                  data-socket={video.socketId}
+                  ref={(ref) => {
+                    if (ref && video.stream) {
+                      ref.srcObject = video.stream;
+                    }
+                  }}
+                  autoPlay
+                ></video>
+                <h2>{video.socketId}</h2>
+              </div>
+            ))}
+          </div>
+
           <video
             ref={localVideoRef}
             autoPlay
             muted
-            className="w-[400px] rounded-lg border border-outline bg-surface"
+            className="meetUserVideo"
           ></video>
 
-          {videos.map((video) => (
-            <div key={video.socketId}>
-              <h2 className="text-sm text-on-surface-variant mb-1">
-                {video.socketId}
-              </h2>
+          <div className="buttonContainers">
+            <button
+              className={`controlButton ${audio ? "" : "off"}`}
+              onClick={handleAudio}
+              title={audio ? "Mute microphone" : "Unmute microphone"}
+            >
+              <span className="material-symbols-outlined">
+                {audio ? "mic" : "mic_off"}
+              </span>
+            </button>
 
-              <video
-                data-socket={video.socketId}
-                ref={(ref) => {
-                  if (ref && video.stream) {
-                    ref.srcObject = video.stream;
-                  }
-                }}
-                autoPlay
-                className="w-[400px] rounded-lg border border-outline bg-surface"
-              ></video>
-            </div>
-          ))}
+            <button
+              className={`controlButton ${video ? "" : "off"}`}
+              onClick={handleVideo}
+              title={video ? "Turn off camera" : "Turn on camera"}
+            >
+              <span className="material-symbols-outlined">
+                {video ? "videocam" : "videocam_off"}
+              </span>
+            </button>
+
+            {screenAvailable && (
+              <button
+                className={`controlButton ${screen ? "active" : ""}`}
+                onClick={handleScreen}
+                title="Share screen"
+              >
+                <span className="material-symbols-outlined">screen_share</span>
+              </button>
+            )}
+
+            <button
+              className="controlButton endCallButton"
+              onClick={handleEndCall}
+              title="Leave call"
+            >
+              <span className="material-symbols-outlined">call_end</span>
+            </button>
+          </div>
         </div>
       )}
     </div>

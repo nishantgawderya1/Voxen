@@ -1,0 +1,143 @@
+.meetVideoContainer {
+  position: fixed;
+  inset: 0;
+  background-color: #080a10;
+  color: #e2e2eb;
+  overflow: hidden;
+}
+
+/* Remote participants grid */
+.conferenceView {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  padding: 24px;
+  padding-bottom: 120px;
+  height: 100vh;
+  overflow-y: auto;
+  align-content: start;
+}
+
+.conferenceView > div {
+  position: relative;
+}
+
+.conferenceView > div video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background-color: #0f1117;
+}
+
+.conferenceView > div h2 {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: #e2e2eb;
+  background: rgba(8, 10, 16, 0.65);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  backdrop-filter: blur(6px);
+  max-width: 70%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Local self-view (picture-in-picture) */
+.meetUserVideo {
+  position: fixed;
+  bottom: 110px;
+  right: 24px;
+  width: 240px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: #0f1117;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+  z-index: 20;
+}
+
+/* Empty state when no one else has joined */
+.emptyConference {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #8b8fa8;
+  font-size: 15px;
+  padding: 24px;
+}
+
+/* Control dock */
+.buttonContainers {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 20px;
+  background: rgba(15, 17, 23, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(12px);
+  border-radius: 9999px;
+  z-index: 30;
+}
+
+.controlButton {
+  width: 54px;
+  height: 54px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  background-color: #282a31;
+  color: #e2e2eb;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.controlButton:hover {
+  background-color: #33343c;
+}
+
+.controlButton:active {
+  transform: scale(0.94);
+}
+
+/* Muted / off state */
+.controlButton.off {
+  background-color: #93000a;
+  color: #ffdad6;
+}
+
+/* Screen share active */
+.controlButton.active {
+  background-color: #7c5cff;
+  color: #ffffff;
+}
+
+.endCallButton {
+  width: 64px;
+  background-color: #ff4d4f;
+  color: #ffffff;
+}
+
+.endCallButton:hover {
+  background-color: #e23a3c;
+}
+
+.controlButton .material-symbols-outlined {
+  font-size: 24px;
+}
