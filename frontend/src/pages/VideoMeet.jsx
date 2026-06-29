@@ -34,6 +34,10 @@ export default function VideoMeet() {
 
   let router = useNavigate();
 
+  let [messages, setMessages] = useState([]);
+  let [message, setMessage] = useState("");
+  let [newMessages, setNewMessages] = useState(0);
+
   const getPermissions = async () => {
     try {
       const videoPermission = await navigator.mediaDevices.getUserMedia({
@@ -229,8 +233,16 @@ export default function VideoMeet() {
     }
   };
 
-  // TODO
-  let addMessage = (data, sender, socketIdSender) => {};
+  let addMessage = (data, sender, socketIdSender) => {
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { sender: sender, data: data },
+    ]);
+
+    if (socketIdSender !== socketIdRef.current) {
+      setNewMessages((prevNewMessages) => prevNewMessages + 1);
+    }
+  };
 
   let connectToSocketServer = () => {
     socketRef.current = io.connect(server_url, { secure: false });
@@ -419,6 +431,21 @@ export default function VideoMeet() {
     router("/");
   };
 
+  let sendMessage = () => {
+    if (message.trim() === "") return;
+    socketRef.current.emit("chat-message", message, username);
+    setMessage("");
+  };
+
+  let openChat = () => {
+    setModal(true);
+    setNewMessages(0);
+  };
+
+  let closeChat = () => {
+    setModal(false);
+  };
+
   let getMedia = () => {
     setVideo(videoAvailable);
     setAudio(audioAvailable);
@@ -523,6 +550,17 @@ export default function VideoMeet() {
             )}
 
             <button
+              className={`controlButton ${showModal ? "active" : ""}`}
+              onClick={() => (showModal ? closeChat() : openChat())}
+              title="Chat"
+            >
+              <span className="material-symbols-outlined">chat</span>
+              {newMessages > 0 && (
+                <span className="chatBadge">{newMessages}</span>
+              )}
+            </button>
+
+            <button
               className="controlButton endCallButton"
               onClick={handleEndCall}
               title="Leave call"
@@ -530,6 +568,45 @@ export default function VideoMeet() {
               <span className="material-symbols-outlined">call_end</span>
             </button>
           </div>
+
+          {showModal && (
+            <div className="chatRoom">
+              <div className="chatHeader">
+                <span>Chat</span>
+                <button onClick={closeChat} title="Close chat">
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              <div className="chattingDisplay">
+                {messages.length === 0 ? (
+                  <div className="chatEmpty">No messages yet</div>
+                ) : (
+                  messages.map((item, index) => (
+                    <div className="chatMessage" key={index}>
+                      <span className="sender">{item.sender}</span>
+                      <span className="text">{item.data}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="chattingArea">
+                <input
+                  type="text"
+                  placeholder="Type a message…"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") sendMessage();
+                  }}
+                />
+                <button className="sendButton" onClick={sendMessage}>
+                  Send
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
