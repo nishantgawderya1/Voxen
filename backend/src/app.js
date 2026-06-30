@@ -25,6 +25,6 @@ const PORT = process.env.PORT || 8000;
 server.listen(PORT, () => console.log("Listening on 8000"));
 
 mongoose
-  .connect("mongodb+srv://nishant_gawdiya:HR13n1058%40%40%23@cluster0.8xwe4yh.mongodb.net/")
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err));

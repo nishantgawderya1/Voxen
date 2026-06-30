@@ -2,9 +2,8 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import { AuthContext } from "../contexts/AuthContext.jsx";
+import server_url from "../environment.js";
 import "../styles/videoComponent.css";
-
-const server_url = "http://localhost:8000";
 
 var connections = {};
 
