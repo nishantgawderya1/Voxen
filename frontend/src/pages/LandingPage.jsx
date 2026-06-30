@@ -25,12 +25,6 @@ const LandingPage = () => {
             >
               Pricing
             </a>
-            <a
-              className="text-secondary-text hover:text-primary-text transition-colors text-sm font-medium"
-              href="#"
-            >
-              Docs
-            </a>
           </div>
           <div className="flex items-center gap-6">
             <Link
@@ -64,10 +58,16 @@ const LandingPage = () => {
               your team can focus on talking.
             </p>
             <div className="fade-in-up delay-2 flex flex-col sm:flex-row items-center gap-4 pt-4">
-              <button className="w-full sm:w-auto bg-primary text-on-primary font-semibold px-8 py-3.5 rounded-lg transition-colors hover:bg-[#b8abff]">
+              <Link
+                to="/auth"
+                className="w-full sm:w-auto text-center bg-primary text-on-primary font-semibold px-8 py-3.5 rounded-lg transition-colors hover:bg-[#b8abff]"
+              >
                 Start for free
-              </button>
-              <button className="w-full sm:w-auto flex items-center justify-center gap-2 text-primary-text border border-outline px-8 py-3.5 rounded-lg hover:bg-surface transition-colors">
+              </Link>
+              <a
+                href="#features"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 text-primary-text border border-outline px-8 py-3.5 rounded-lg hover:bg-surface transition-colors"
+              >
                 <svg
                   fill="none"
                   height="20"
@@ -82,7 +82,7 @@ const LandingPage = () => {
                   <polygon points="5 3 19 12 5 21 5 3"></polygon>
                 </svg>
                 See it live
-              </button>
+              </a>
             </div>
             <div className="fade-in-up delay-2 mt-20 w-full flex flex-col items-center">
               {/* Caption */}
