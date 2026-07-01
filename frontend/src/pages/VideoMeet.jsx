@@ -3,6 +3,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import { AuthContext } from "../contexts/AuthContext.jsx";
 import server_url from "../environment.js";
+import Brand from "../components/Brand.jsx";
+import ThemeToggle from "../components/ThemeToggle.jsx";
+import Aurora from "../components/Aurora.jsx";
 import "../styles/videoComponent.css";
 
 var connections = {};
@@ -463,32 +466,72 @@ export default function VideoMeet() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-on-surface">
+    <div className="min-h-screen bg-bg text-text">
       {askForUsername ? (
-        <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-6">
-          <h2 className="text-2xl font-semibold">Enter into Lobby</h2>
+        <div className="relative flex min-h-screen flex-col">
+          <Aurora />
 
-          <input
-            type="text"
-            placeholder="Enter username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="px-4 h-11 rounded-lg bg-surface border border-outline outline-none w-72"
-          />
+          {/* Lobby header */}
+          <header className="relative z-10 flex items-center justify-between p-6">
+            <Brand to="/home" />
+            <ThemeToggle />
+          </header>
 
-          <button
-            onClick={connect}
-            className="px-6 h-11 rounded-lg bg-primary text-on-primary font-semibold"
-          >
-            Connect
-          </button>
+          {/* Pre-join */}
+          <main className="relative z-10 flex flex-grow items-center justify-center px-6 pb-12">
+            <div className="grid w-full max-w-4xl items-center gap-8 lg:grid-cols-[1.15fr_1fr]">
+              {/* Video preview */}
+              <div className="order-2 lg:order-1">
+                <div className="relative overflow-hidden rounded-[24px] border border-line/10 bg-surface/70 shadow-soft backdrop-blur-xl">
+                  <video
+                    ref={localVideoRef}
+                    autoPlay
+                    muted
+                    className="aspect-video w-full object-cover"
+                  ></video>
+                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_100%_at_50%_0%,transparent_60%,rgb(var(--c-bg)/0.5))]" />
+                  <div className="absolute bottom-4 left-4 flex items-center gap-2">
+                    <span className="chip bg-bg/60">
+                      <span className="h-1.5 w-1.5 rounded-full bg-mint animate-pulse" />
+                      Camera preview
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-          <video
-            ref={localVideoRef}
-            autoPlay
-            muted
-            className="w-[400px] rounded-lg border border-outline mt-4"
-          ></video>
+              {/* Join card */}
+              <div className="order-1 lg:order-2">
+                <span className="chip mb-4">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                  You're about to join
+                </span>
+                <h2 className="font-display text-3xl font-semibold tracking-tight text-text sm:text-4xl">
+                  Ready to join?
+                </h2>
+                <p className="mt-3 text-muted">
+                  Set your name so others recognise you in the room.
+                </p>
+
+                <div className="mt-6 flex flex-col gap-3">
+                  <input
+                    type="text"
+                    placeholder="Enter your name"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && connect()}
+                    className="input-field h-12"
+                  />
+                  <button onClick={connect} className="btn-primary h-12 text-base">
+                    <span className="material-symbols-outlined text-[20px]">videocam</span>
+                    Join meeting
+                  </button>
+                </div>
+                <p className="mt-4 text-xs text-muted">
+                  Room code: <span className="font-mono text-text">{url}</span>
+                </p>
+              </div>
+            </div>
+          </main>
         </div>
       ) : (
         <div className="meetVideoContainer">
@@ -511,7 +554,10 @@ export default function VideoMeet() {
                   }}
                   autoPlay
                 ></video>
-                <h2>{video.socketId}</h2>
+                <h2>
+                  <span className="dot" />
+                  Participant · {video.socketId.slice(0, 5)}
+                </h2>
               </div>
             ))}
           </div>

@@ -2,6 +2,10 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext.jsx";
 import withAuth from "../utils/withAuth.jsx";
+import Brand from "../components/Brand.jsx";
+import ThemeToggle from "../components/ThemeToggle.jsx";
+import Aurora from "../components/Aurora.jsx";
+import { Video, ArrowRight } from "../components/Icons.jsx";
 
 function HistoryComponent() {
   const router = useNavigate();
@@ -14,72 +18,102 @@ function HistoryComponent() {
     const fetchHistory = async () => {
       try {
         const history = await getHistoryOfUser();
-        setMeetings(history);
+        setMeetings(Array.isArray(history) ? history.slice().reverse() : history);
       } catch (e) {
         console.log(e);
       } finally {
         setLoading(false);
       }
     };
-
     fetchHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleString();
+    return date.toLocaleString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   return (
-    <div className="min-h-screen bg-background text-on-surface flex flex-col">
-      {/* Navbar */}
-      <header className="border-b border-border-subtle">
-        <div className="max-w-3xl mx-auto px-6 h-20 flex items-center justify-between">
-          <span className="text-xl font-semibold">Meeting History</span>
-          <button
-            onClick={() => router("/home")}
-            className="flex items-center gap-2 px-4 h-10 rounded-lg border border-outline hover:bg-surface transition-colors text-sm font-medium"
-          >
-            <span className="material-symbols-outlined">arrow_back</span>
-            Home
-          </button>
+    <div className="relative flex min-h-screen flex-col">
+      <Aurora />
+
+      {/* Header */}
+      <header className="sticky top-0 z-40">
+        <div className="container-base">
+          <div className="mt-3 flex h-16 items-center justify-between rounded-2xl glass px-4 shadow-soft">
+            <Brand to="/home" />
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <button onClick={() => router("/home")} className="btn-ghost px-4 py-2 text-sm">
+                <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+                Home
+              </button>
+            </div>
+          </div>
         </div>
       </header>
 
       {/* Body */}
-      <main className="flex-grow max-w-3xl w-full mx-auto px-6 py-10">
+      <main className="mx-auto w-full max-w-3xl flex-grow px-6 py-10">
+        <div className="mb-8">
+          <h1 className="font-display text-3xl font-semibold tracking-tight text-text">
+            Meeting history
+          </h1>
+          <p className="mt-2 text-muted">Your past rooms, ready to rejoin.</p>
+        </div>
+
         {loading ? (
-          <p className="text-center text-on-surface-variant">Loading…</p>
-        ) : meetings.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
-            <span className="material-symbols-outlined text-on-surface-variant text-5xl">
-              history
+          <div className="flex flex-col gap-3">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-[74px] animate-pulse rounded-card border border-line/10 bg-surface/50" />
+            ))}
+          </div>
+        ) : !meetings || meetings.length === 0 ? (
+          <div className="card flex flex-col items-center gap-4 py-20 text-center">
+            <span className="grid h-16 w-16 place-items-center rounded-2xl bg-primary/10 text-primary">
+              <span className="material-symbols-outlined text-3xl">history</span>
             </span>
-            <p className="text-on-surface-variant">
-              You don't have any past meetings yet.
-            </p>
+            <div>
+              <p className="font-semibold text-text">No meetings yet</p>
+              <p className="mt-1 text-sm text-muted">
+                Your calls will show up here once you start one.
+              </p>
+            </div>
+            <button onClick={() => router("/home")} className="btn-primary mt-2">
+              <Video size={18} /> Start a meeting
+            </button>
           </div>
         ) : (
           <div className="flex flex-col gap-3">
             {meetings.map((meeting) => (
               <div
                 key={meeting._id}
-                className="flex items-center justify-between gap-4 p-4 rounded-xl bg-surface border border-border-subtle"
+                className="card card-hover flex items-center justify-between gap-4 p-4"
               >
-                <div className="min-w-0">
-                  <div className="font-semibold truncate">
-                    Code: {meeting.meetingCode}
-                  </div>
-                  <div className="text-sm text-on-surface-variant">
-                    {formatDate(meeting.date)}
+                <div className="flex min-w-0 items-center gap-4">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/12 text-primary">
+                    <Video size={20} />
+                  </span>
+                  <div className="min-w-0">
+                    <div className="truncate font-semibold text-text">
+                      {meeting.meetingCode}
+                    </div>
+                    <div className="text-sm text-muted">{formatDate(meeting.date)}</div>
                   </div>
                 </div>
-
                 <button
                   onClick={() => router(`/${meeting.meetingCode}`)}
-                  className="shrink-0 h-10 px-5 rounded-lg bg-primary text-on-primary font-semibold"
+                  className="btn-ghost group shrink-0 px-5 py-2.5 text-sm"
                 >
-                  Join
+                  Rejoin
+                  <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
                 </button>
               </div>
             ))}

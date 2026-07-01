@@ -6,15 +6,16 @@ import Authentication from "./pages/Authentication.jsx";
 import HomePage from "./pages/home.jsx";
 import History from "./pages/History.jsx";
 import VideoMeet from "./pages/VideoMeet.jsx";
+import MarketingLayout from "./components/MarketingLayout.jsx";
 import { AuthProvider } from "./contexts/AuthContext.jsx";
 import "./App.css";
 
 const Home = () => (
-  <>
+  <MarketingLayout>
     <LandingPage />
     <Features />
     <Pricing />
-  </>
+  </MarketingLayout>
 );
 
 function App() {
@@ -24,8 +25,8 @@ function App() {
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/features" element={<Features />} />
-            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/features" element={<Home />} />
+            <Route path="/pricing" element={<Home />} />
             <Route path="/auth" element={<Authentication />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/history" element={<History />} />
