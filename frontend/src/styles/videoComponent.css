@@ -357,3 +357,115 @@
 .sendButton:active {
   transform: scale(0.96);
 }
+
+/* ------------------------------------------------------------------ */
+/*  Responsive — tablets                                              */
+/* ------------------------------------------------------------------ */
+@media (max-width: 900px) {
+  .conferenceView {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+    padding: 16px;
+    padding-bottom: 120px;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Responsive — phones                                              */
+/* ------------------------------------------------------------------ */
+@media (max-width: 640px) {
+  /* One clean column of remote participants, no cramped side-by-side. */
+  .conferenceView {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 12px;
+    padding-bottom: 150px;
+    align-content: start;
+    padding-top: 16px;
+  }
+
+  .conferenceView > div video {
+    aspect-ratio: 4 / 3;
+    border-radius: 14px;
+  }
+
+  .conferenceView > div h2 {
+    font-size: 11px;
+    padding: 4px 9px;
+    bottom: 10px;
+    left: 10px;
+  }
+
+  .emptyConference {
+    font-size: 14px;
+    padding: 20px;
+  }
+
+  /* Smaller self-view, tucked just above the dock. */
+  .meetUserVideo {
+    width: 108px;
+    bottom: 92px;
+    right: 12px;
+    border-radius: 12px;
+  }
+
+  /* Compact control dock that always fits a narrow screen. */
+  .buttonContainers {
+    bottom: 16px;
+    gap: 8px;
+    padding: 9px 12px;
+    max-width: calc(100vw - 20px);
+  }
+
+  .controlButton {
+    width: 46px;
+    height: 46px;
+  }
+
+  .controlButton .material-symbols-outlined {
+    font-size: 21px;
+  }
+
+  .endCallButton {
+    width: 56px;
+  }
+
+  /* Chat becomes a full-width sheet. */
+  .chatRoom {
+    width: 100vw;
+    max-width: 100vw;
+  }
+}
+
+/* Extra-small phones — shrink the dock a touch more. */
+@media (max-width: 360px) {
+  .buttonContainers {
+    gap: 6px;
+    padding: 8px 10px;
+  }
+  .controlButton {
+    width: 42px;
+    height: 42px;
+  }
+  .endCallButton {
+    width: 50px;
+  }
+  .meetUserVideo {
+    width: 92px;
+  }
+}
+
+/* Landscape phones — keep two columns but shrink the dock so it clears. */
+@media (max-height: 480px) and (orientation: landscape) {
+  .conferenceView {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    padding-bottom: 96px;
+  }
+  .meetUserVideo {
+    bottom: 78px;
+    width: 96px;
+  }
+  .buttonContainers {
+    bottom: 12px;
+  }
+}
