@@ -1,6 +1,7 @@
-import { useState, useContext } from "react";
-import { Link } from "react-router-dom";
+import { useState, useContext, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext.jsx";
+import { isAuthenticated } from "../utils/auth.js";
 import { Snackbar } from "@mui/material";
 import Brand from "../components/Brand.jsx";
 import ThemeToggle from "../components/ThemeToggle.jsx";
@@ -30,6 +31,12 @@ const perks = [
 
 const Authentication = () => {
   const { handleRegister, handleLogin } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  // Already signed in? Skip the form entirely.
+  useEffect(() => {
+    if (isAuthenticated()) navigate("/home", { replace: true });
+  }, [navigate]);
 
   const [mode, setMode] = useState("signin");
   const [name, setName] = useState("");

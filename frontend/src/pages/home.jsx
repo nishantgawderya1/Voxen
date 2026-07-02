@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import withAuth from "../utils/withAuth.jsx";
+import { clearToken } from "../utils/auth.js";
 import Brand from "../components/Brand.jsx";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 import Aurora from "../components/Aurora.jsx";
@@ -21,8 +22,8 @@ function HomeComponent() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    router("/auth");
+    clearToken();
+    router("/auth", { replace: true });
   };
 
   return (

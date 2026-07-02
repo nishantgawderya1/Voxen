@@ -35,9 +35,52 @@
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0&display=swap"
       rel="stylesheet"
     />
+    <style>
+      /* Pre-mount loader shown before the JS bundle boots (no blank flash).
+         React replaces #root's contents on mount, removing it automatically. */
+      #initial-loader {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        background: #07080d;
+        z-index: 9999;
+      }
+      .light #initial-loader {
+        background: #f7f8fc;
+      }
+      #initial-loader .il-ring {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        border: 3px solid rgba(124, 92, 255, 0.22);
+        border-top-color: #7c5cff;
+        animation: il-spin 0.8s linear infinite;
+      }
+      #initial-loader .il-txt {
+        font-family: "Space Grotesk", Inter, sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        color: #8e92a8;
+      }
+      @keyframes il-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
   </head>
   <body class="antialiased overflow-x-hidden">
-    <div id="root"></div>
+    <div id="root">
+      <div id="initial-loader">
+        <div class="il-ring"></div>
+        <div class="il-txt">Voxen</div>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -6,6 +6,7 @@ import server_url from "../environment.js";
 import Brand from "../components/Brand.jsx";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 import Aurora from "../components/Aurora.jsx";
+import { isAuthenticated } from "../utils/auth.js";
 import "../styles/videoComponent.css";
 
 var connections = {};
@@ -491,7 +492,24 @@ export default function VideoMeet() {
     } catch (e) {
       console.log(e);
     }
-    router("/");
+
+    // Tear down peer connections and the socket so we leave cleanly.
+    for (let id in connections) {
+      try {
+        connections[id].close();
+      } catch (e) {
+        console.log(e);
+      }
+      delete connections[id];
+    }
+    try {
+      socketRef.current?.disconnect();
+    } catch (e) {
+      console.log(e);
+    }
+
+    // Signed-in users return to their dashboard; guests go to the landing page.
+    router(isAuthenticated() ? "/home" : "/");
   };
 
   let sendMessage = () => {
