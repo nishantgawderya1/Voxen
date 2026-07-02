@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { BrandMark } from "./Brand.jsx";
 
 const phrases = [
   { from: "नमस्ते, क्या हम शुरू करें?", lang: "HI", to: "Hi, shall we get started?" },
@@ -79,7 +80,8 @@ export default function HeroVisual() {
           <span className="h-2.5 w-2.5 rounded-full bg-danger/80" />
           <span className="h-2.5 w-2.5 rounded-full bg-mint/80" />
           <span className="h-2.5 w-2.5 rounded-full bg-accent/80" />
-          <span className="ml-2 text-xs font-medium text-muted">Voxen · Product Sync</span>
+          <BrandMark size={14} className="ml-2" />
+          <span className="text-xs font-medium text-muted">· Product Sync</span>
           <span className="ml-auto flex items-center gap-1.5 rounded-full bg-danger/12 px-2 py-0.5 text-[10px] font-semibold text-danger">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-danger" /> REC
           </span>

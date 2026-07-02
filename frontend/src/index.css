@@ -229,6 +229,14 @@ body {
   line-height: 1;
 }
 
+/* Brand logo assets are white-on-transparent; invert to dark in light mode. */
+.brand-logo {
+  transition: filter 0.3s ease;
+}
+.light .brand-logo {
+  filter: invert(1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

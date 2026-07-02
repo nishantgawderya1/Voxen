@@ -11,8 +11,35 @@ import "../styles/videoComponent.css";
 var connections = {};
 
 const peerConfigConnections = {
-  iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+  iceServers: [
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:stun1.l.google.com:19302" },
+  ],
 };
+
+// Attach a stream to a peer connection using the modern addTrack/replaceTrack
+// API. The legacy addStream()/onaddstream events are unreliable in current
+// browsers (they no longer fire), which leaves remote tiles black.
+function attachStream(pc, stream) {
+  if (!pc || !stream) return;
+  const senders = pc.getSenders();
+  stream.getTracks().forEach((track) => {
+    const sender = senders.find((s) => s.track && s.track.kind === track.kind);
+    if (sender) {
+      try {
+        sender.replaceTrack(track);
+      } catch (e) {
+        console.log(e);
+      }
+    } else {
+      try {
+        pc.addTrack(track, stream);
+      } catch (e) {
+        console.log(e);
+      }
+    }
+  });
+}
 
 export default function VideoMeet() {
   var socketRef = useRef();
@@ -125,7 +152,7 @@ export default function VideoMeet() {
     for (let id in connections) {
       if (id === socketIdRef.current) continue;
 
-      connections[id].addStream(window.localStream);
+      attachStream(connections[id], window.localStream);
 
       connections[id].createOffer().then((description) => {
         connections[id]
@@ -158,7 +185,7 @@ export default function VideoMeet() {
           localVideoRef.current.srcObject = window.localStream;
 
           for (let id in connections) {
-            connections[id].addStream(window.localStream);
+            attachStream(connections[id], window.localStream);
 
             connections[id].createOffer().then((description) => {
               connections[id]
@@ -267,6 +294,11 @@ export default function VideoMeet() {
 
       socketRef.current.on("user-joined", (id, clients) => {
         clients.forEach((socketListId) => {
+          // Don't tear down peer connections we already have — the server
+          // broadcasts the full participant list on every join, and recreating
+          // an established connection would black out that participant.
+          if (connections[socketListId]) return;
+
           connections[socketListId] = new RTCPeerConnection(
             peerConfigConnections
           );
@@ -281,7 +313,11 @@ export default function VideoMeet() {
             }
           };
 
-          connections[socketListId].onaddstream = (event) => {
+          connections[socketListId].ontrack = (event) => {
+            const stream =
+              (event.streams && event.streams[0]) ||
+              new MediaStream([event.track]);
+
             let videoExists = videoRef.current.find(
               (video) => video.socketId === socketListId
             );
@@ -290,7 +326,7 @@ export default function VideoMeet() {
               setVideos((videos) => {
                 const updatedVideos = videos.map((video) =>
                   video.socketId === socketListId
-                    ? { ...video, stream: event.stream }
+                    ? { ...video, stream }
                     : video
                 );
                 videoRef.current = updatedVideos;
@@ -299,7 +335,7 @@ export default function VideoMeet() {
             } else {
               let newVideo = {
                 socketId: socketListId,
-                stream: event.stream,
+                stream,
                 autoplay: true,
                 playsinline: true,
               };
@@ -312,12 +348,10 @@ export default function VideoMeet() {
             }
           };
 
-          if (window.localStream !== undefined && window.localStream !== null) {
-            connections[socketListId].addStream(window.localStream);
-          } else {
+          if (window.localStream === undefined || window.localStream === null) {
             window.localStream = blackSilence();
-            connections[socketListId].addStream(window.localStream);
           }
+          attachStream(connections[socketListId], window.localStream);
         });
 
         if (id === socketIdRef.current) {
@@ -325,7 +359,7 @@ export default function VideoMeet() {
             if (id2 === socketIdRef.current) continue;
 
             try {
-              connections[id2].addStream(window.localStream);
+              attachStream(connections[id2], window.localStream);
             } catch (err) {
               console.log(err);
             }
@@ -361,7 +395,7 @@ export default function VideoMeet() {
     for (let id in connections) {
       if (id === socketIdRef.current) continue;
 
-      connections[id].addStream(window.localStream);
+      attachStream(connections[id], window.localStream);
 
       connections[id].createOffer().then((description) => {
         connections[id]
