@@ -17,6 +17,14 @@ const peerConfigConnections = {
   ],
 };
 
+// Audio capture constraints — echo cancellation + noise suppression kill the
+// feedback squeal and background hiss that raw `audio: true` lets through.
+const AUDIO_CONSTRAINTS = {
+  echoCancellation: true,
+  noiseSuppression: true,
+  autoGainControl: true,
+};
+
 // Attach a stream to a peer connection using the modern addTrack/replaceTrack
 // API. The legacy addStream()/onaddstream events are unreliable in current
 // browsers (they no longer fire), which leaves remote tiles black.
@@ -82,7 +90,7 @@ export default function VideoMeet() {
       }
 
       const audioPermission = await navigator.mediaDevices.getUserMedia({
-        audio: true,
+        audio: AUDIO_CONSTRAINTS,
       });
       if (audioPermission) {
         setAudioAvailable(true);
@@ -99,7 +107,7 @@ export default function VideoMeet() {
       if (videoAvailable || audioAvailable) {
         const userMediaStream = await navigator.mediaDevices.getUserMedia({
           video: videoAvailable,
-          audio: audioAvailable,
+          audio: audioAvailable ? AUDIO_CONSTRAINTS : false,
         });
         if (userMediaStream) {
           window.localStream = userMediaStream;
@@ -207,7 +215,10 @@ export default function VideoMeet() {
   const getUserMedia = () => {
     if ((video && videoAvailable) || (audio && audioAvailable)) {
       navigator.mediaDevices
-        .getUserMedia({ video: video, audio: audio })
+        .getUserMedia({
+          video: video,
+          audio: audio ? AUDIO_CONSTRAINTS : false,
+        })
         .then(getUserMediaSuccess)
         .catch((err) => console.log(err));
     } else {
@@ -289,7 +300,23 @@ export default function VideoMeet() {
       socketRef.current.on("chat-message", addMessage);
 
       socketRef.current.on("user-left", (id) => {
-        setVideos((videos) => videos.filter((video) => video.socketId !== id));
+        // Close and drop the peer connection so it can be re-established
+        // cleanly if that participant returns.
+        if (connections[id]) {
+          try {
+            connections[id].close();
+          } catch (e) {
+            console.log(e);
+          }
+          delete connections[id];
+        }
+        setVideos((videos) => {
+          const updatedVideos = videos.filter(
+            (video) => video.socketId !== id
+          );
+          videoRef.current = updatedVideos;
+          return updatedVideos;
+        });
       });
 
       socketRef.current.on("user-joined", (id, clients) => {
@@ -318,34 +345,31 @@ export default function VideoMeet() {
               (event.streams && event.streams[0]) ||
               new MediaStream([event.track]);
 
-            let videoExists = videoRef.current.find(
-              (video) => video.socketId === socketListId
-            );
-
-            if (videoExists) {
-              setVideos((videos) => {
-                const updatedVideos = videos.map((video) =>
-                  video.socketId === socketListId
-                    ? { ...video, stream }
-                    : video
-                );
-                videoRef.current = updatedVideos;
-                return updatedVideos;
-              });
-            } else {
-              let newVideo = {
-                socketId: socketListId,
-                stream,
-                autoplay: true,
-                playsinline: true,
-              };
-
-              setVideos((videos) => {
-                const updatedVideos = [...videos, newVideo];
-                videoRef.current = updatedVideos;
-                return updatedVideos;
-              });
-            }
+            // ontrack fires once per track (audio + video). Dedupe atomically
+            // inside the updater — checking videoRef.current here would be stale
+            // between the two synchronous calls and create a duplicate tile.
+            setVideos((videos) => {
+              const exists = videos.some(
+                (video) => video.socketId === socketListId
+              );
+              const updatedVideos = exists
+                ? videos.map((video) =>
+                    video.socketId === socketListId
+                      ? { ...video, stream }
+                      : video
+                  )
+                : [
+                    ...videos,
+                    {
+                      socketId: socketListId,
+                      stream,
+                      autoplay: true,
+                      playsinline: true,
+                    },
+                  ];
+              videoRef.current = updatedVideos;
+              return updatedVideos;
+            });
           };
 
           if (window.localStream === undefined || window.localStream === null) {
