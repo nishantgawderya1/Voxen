@@ -33,7 +33,7 @@ function HomeComponent() {
       {/* Header */}
       <header className="sticky top-0 z-40">
         <div className="container-base">
-          <div className="mt-3 flex h-16 items-center justify-between rounded-2xl glass px-4 shadow-soft">
+          <div className="mt-3 flex h-16 items-center justify-between rounded-2xl glass px-4">
             <Brand to="/home" />
             <div className="flex items-center gap-2">
               <button
@@ -61,10 +61,10 @@ function HomeComponent() {
         <div className="w-full max-w-xl">
           <div className="mb-8 text-center">
             <span className="chip mx-auto mb-4">
-              <span className="h-1.5 w-1.5 rounded-full bg-mint animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-full bg-mint" />
               Ready when you are
             </span>
-            <h1 className="font-display text-3xl font-semibold tracking-tight text-text sm:text-4xl">
+            <h1 className="font-display text-3xl font-medium tracking-tight text-text sm:text-4xl">
               Start or join a meeting
             </h1>
             <p className="mt-3 text-muted">

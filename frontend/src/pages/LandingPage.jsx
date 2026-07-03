@@ -18,11 +18,11 @@ const LandingPage = () => {
           {/* Copy */}
           <div className="flex flex-col items-start text-left">
             <span className="reveal chip mb-5">
-              <span className="h-1.5 w-1.5 rounded-full bg-mint animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-full bg-mint" />
               The AI layer for real-time conversation
             </span>
 
-            <h1 className="reveal font-display text-[42px] font-semibold leading-[1.05] tracking-tight text-text sm:text-[58px]">
+            <h1 className="reveal font-display text-[42px] font-medium leading-[1.05] tracking-tight text-text sm:text-[58px]">
               Break every language
               <br />
               barrier{" "}
@@ -57,30 +57,28 @@ const LandingPage = () => {
           </div>
         </div>
 
-        {/* Trusted-by marquee */}
+        {/* Trusted-by */}
         <div className="reveal mt-24">
-          <p className="mb-6 text-center text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+          <p className="mb-6 text-center text-xs font-medium uppercase tracking-[0.2em] text-muted">
             Trusted by fast-moving teams worldwide
           </p>
-          <div className="mask-fade-x overflow-hidden">
-            <div className="flex w-max animate-marquee items-center gap-14">
-              {[...logos, ...logos].map((l, i) => (
-                <span
-                  key={i}
-                  className="whitespace-nowrap font-display text-2xl font-semibold text-muted/60 transition-colors hover:text-text"
-                >
-                  {l}
-                </span>
-              ))}
-            </div>
+          <div className="flex flex-wrap items-center justify-center gap-x-14 gap-y-6">
+            {logos.map((l) => (
+              <span
+                key={l}
+                className="whitespace-nowrap font-display text-2xl font-medium text-muted/60 transition-colors hover:text-text"
+              >
+                {l}
+              </span>
+            ))}
           </div>
         </div>
 
         {/* Stats */}
-        <div className="reveal mt-20 grid grid-cols-2 gap-px overflow-hidden rounded-card border border-line/10 bg-line/10 md:grid-cols-4">
+        <div className="reveal mt-24 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line/[0.07] bg-line/[0.07] md:grid-cols-4">
           {stats.map((s) => (
-            <div key={s.label} className="bg-surface/60 p-6 text-center backdrop-blur-sm">
-              <div className="font-display text-3xl font-semibold text-text sm:text-4xl">
+            <div key={s.label} className="bg-surface p-6 text-center">
+              <div className="font-display text-3xl font-medium text-text sm:text-4xl">
                 {s.value}
               </div>
               <div className="mt-1 text-sm text-muted">{s.label}</div>

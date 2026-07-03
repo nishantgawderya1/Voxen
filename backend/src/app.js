@@ -6,6 +6,7 @@ import { createServer } from "http";
 import connectToSocket from "./controllers/socketManager.js";
 import cors from "cors";
 import userRoutes from "./routes/userRoutes.js";
+import transcribeRoute from "./routes/transcribe.js";
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ app.use(express.json({ limit: "49kb" }));
 app.use(express.urlencoded({ limit: "49kb", extended: true }));
 app.use(cors());
 app.use("/api/v1/users", userRoutes);
+transcribeRoute(app);
 
 const server = createServer(app);
 const io = connectToSocket(server);

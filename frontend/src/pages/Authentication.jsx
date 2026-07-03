@@ -83,7 +83,7 @@ const Authentication = () => {
       <aside className="relative hidden flex-col justify-between overflow-hidden border-r border-line/10 bg-surface/40 p-12 backdrop-blur-xl lg:flex">
         <Brand />
         <div className="relative max-w-md">
-          <h2 className="font-display text-4xl font-semibold leading-tight tracking-tight text-text">
+          <h2 className="font-display text-4xl font-medium leading-tight tracking-tight text-text">
             Every conversation,
             <br />
             <span className="text-gradient">without borders.</span>
@@ -104,7 +104,7 @@ const Authentication = () => {
             {["A", "K", "S"].map((c, i) => (
               <span
                 key={c}
-                className="grid h-8 w-8 place-items-center rounded-full border-2 border-surface bg-gradient-to-br from-primary/70 to-accent/50 text-xs font-semibold text-primary-fg"
+                className="grid h-8 w-8 place-items-center rounded-full border-2 border-surface bg-gradient-to-br from-primary/70 to-accent/50 text-xs font-medium text-primary-fg"
                 style={{ zIndex: 3 - i }}
               >
                 {c}
@@ -112,7 +112,7 @@ const Authentication = () => {
             ))}
           </div>
           <p className="text-sm text-muted">
-            Joined by <span className="font-semibold text-text">12,000+</span>{" "}
+            Joined by <span className="font-medium text-text">12,000+</span>{" "}
             teams worldwide
           </p>
         </div>
@@ -135,7 +135,7 @@ const Authentication = () => {
         <div className="flex flex-grow items-center justify-center px-6 pb-12">
           <div className="w-full max-w-[420px]">
             <div className="mb-7 text-center">
-              <h1 className="font-display text-3xl font-semibold tracking-tight text-text">
+              <h1 className="font-display text-3xl font-medium tracking-tight text-text">
                 {isSignup ? "Create your account" : "Welcome back"}
               </h1>
               <p className="mt-2 text-muted">
@@ -216,7 +216,7 @@ const Authentication = () => {
                     <button
                       type="button"
                       onClick={() => setShowPw((v) => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted hover:text-text"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted hover:text-text"
                     >
                       {showPw ? "Hide" : "Show"}
                     </button>
@@ -232,7 +232,7 @@ const Authentication = () => {
             <p className="mt-6 text-center text-sm text-muted">
               {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
               <button
-                className="font-semibold text-primary hover:underline"
+                className="font-medium text-primary hover:underline"
                 onClick={() => setMode(isSignup ? "signin" : "signup")}
               >
                 {isSignup ? "Sign in" : "Sign up"}

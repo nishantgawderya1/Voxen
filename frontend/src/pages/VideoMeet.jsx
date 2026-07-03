@@ -7,6 +7,8 @@ import Brand from "../components/Brand.jsx";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 import Aurora from "../components/Aurora.jsx";
 import { isAuthenticated } from "../utils/auth.js";
+import useTranscription from "../hooks/useTranscription.js";
+import TranscriptSidebar from "../components/TranscriptSidebar.jsx";
 import "../styles/videoComponent.css";
 
 var connections = {};
@@ -70,6 +72,8 @@ export default function VideoMeet() {
 
   let [askForUsername, setAskForUsername] = useState(true);
   let [username, setUsername] = useState("");
+  let [showTranscript, setShowTranscript] = useState(false);
+  let [callStream, setCallStream] = useState(null);
 
   let router = useNavigate();
   let { url } = useParams();
@@ -536,10 +540,18 @@ export default function VideoMeet() {
   const connect = () => {
     setAskForUsername(false);
     getMedia();
+    setCallStream(window.localStream || null);
     if (url) {
       addToUserHistory(url).catch((e) => console.log(e));
     }
   };
+
+  useTranscription(
+    callStream,
+    socketRef.current,
+    window.location.href,
+    !askForUsername && !!callStream
+  );
 
   return (
     <div className="min-h-screen bg-bg text-text">
@@ -558,7 +570,7 @@ export default function VideoMeet() {
             <div className="grid w-full max-w-4xl items-center gap-8 lg:grid-cols-[1.15fr_1fr]">
               {/* Video preview */}
               <div className="order-2 lg:order-1">
-                <div className="relative overflow-hidden rounded-[24px] border border-line/10 bg-surface/70 shadow-soft backdrop-blur-xl">
+                <div className="relative overflow-hidden rounded-[24px] border border-line/10 bg-surface/70 backdrop-blur-xl">
                   <video
                     ref={localVideoRef}
                     autoPlay
@@ -568,7 +580,7 @@ export default function VideoMeet() {
                   <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_100%_at_50%_0%,transparent_60%,rgb(var(--c-bg)/0.5))]" />
                   <div className="absolute bottom-4 left-4 flex items-center gap-2">
                     <span className="chip bg-bg/60">
-                      <span className="h-1.5 w-1.5 rounded-full bg-mint animate-pulse" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-mint" />
                       Camera preview
                     </span>
                   </div>
@@ -581,7 +593,7 @@ export default function VideoMeet() {
                   <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                   You're about to join
                 </span>
-                <h2 className="font-display text-3xl font-semibold tracking-tight text-text sm:text-4xl">
+                <h2 className="font-display text-3xl font-medium tracking-tight text-text sm:text-4xl">
                   Ready to join?
                 </h2>
                 <p className="mt-3 text-muted">
@@ -677,6 +689,14 @@ export default function VideoMeet() {
             )}
 
             <button
+              className={`controlButton ${showTranscript ? "active" : ""}`}
+              onClick={() => setShowTranscript((v) => !v)}
+              title="Live transcript"
+            >
+              <span className="material-symbols-outlined">closed_caption</span>
+            </button>
+
+            <button
               className={`controlButton ${showModal ? "active" : ""}`}
               onClick={() => (showModal ? closeChat() : openChat())}
               title="Chat"
@@ -695,6 +715,12 @@ export default function VideoMeet() {
               <span className="material-symbols-outlined">call_end</span>
             </button>
           </div>
+
+          <TranscriptSidebar
+            socket={socketRef.current}
+            open={showTranscript}
+            onClose={() => setShowTranscript(false)}
+          />
 
           {showModal && (
             <div className="chatRoom">

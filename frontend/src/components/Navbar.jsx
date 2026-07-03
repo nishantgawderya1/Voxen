@@ -27,7 +27,7 @@ export default function Navbar() {
         <div
           className={`mt-3 flex h-16 items-center justify-between rounded-2xl px-4 transition-all duration-300 ${
             scrolled
-              ? "glass shadow-soft"
+              ? "glass"
               : "border border-transparent bg-transparent"
           }`}
         >
@@ -49,7 +49,7 @@ export default function Navbar() {
             <ThemeToggle />
             <Link
               to="/auth"
-              className="hidden rounded-xl px-4 py-2 text-sm font-semibold text-muted transition-colors hover:text-text sm:inline-flex"
+              className="hidden rounded-xl px-4 py-2 text-sm font-medium text-muted transition-colors hover:text-text sm:inline-flex"
             >
               Sign in
             </Link>

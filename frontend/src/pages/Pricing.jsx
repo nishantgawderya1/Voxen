@@ -59,7 +59,7 @@ const Pricing = () => {
         {/* Pricing head */}
         <div className="reveal mx-auto max-w-2xl text-center">
           <span className="eyebrow">Pricing</span>
-          <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight text-text sm:text-[40px]">
+          <h2 className="mt-3 font-display text-3xl font-medium tracking-tight text-text sm:text-[40px]">
             Simple, honest pricing
           </h2>
           <p className="mt-4 text-muted">
@@ -76,23 +76,23 @@ const Pricing = () => {
               data-reveal-delay={i * 90}
               className={`reveal relative flex flex-col rounded-card p-7 ${
                 t.highlight
-                  ? "border border-primary/40 bg-surface shadow-glow"
+                  ? "border border-primary/40 bg-surface"
                   : "card"
               }`}
             >
               {t.highlight && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary-fg">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-[10px] font-medium uppercase tracking-widest text-primary-fg">
                   Most popular
                 </span>
               )}
               <div className="mb-6">
-                <h3 className={`text-lg font-semibold ${t.highlight ? "text-primary" : "text-text"}`}>
+                <h3 className={`text-lg font-medium ${t.highlight ? "text-primary" : "text-text"}`}>
                   {t.name}
                 </h3>
                 <p className="mt-1 text-sm text-muted">{t.tagline}</p>
               </div>
               <div className="mb-6 flex items-end gap-1">
-                <span className="font-display text-5xl font-semibold text-text">{t.price}</span>
+                <span className="font-display text-5xl font-medium text-text">{t.price}</span>
                 <span className="mb-1.5 text-sm text-muted">{t.period}</span>
               </div>
               <ul className="mb-8 flex-grow space-y-3">
@@ -119,8 +119,8 @@ const Pricing = () => {
         <div className="mt-28">
           <div className="reveal mx-auto mb-12 max-w-2xl text-center">
             <span className="eyebrow">Loved by teams</span>
-            <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight text-text sm:text-[40px]">
-              Conversations, transformed
+            <h2 className="mt-3 font-display text-3xl font-medium tracking-tight text-text sm:text-[40px]">
+              What teams say about Voxen
             </h2>
           </div>
           <div className="grid gap-5 md:grid-cols-3">
@@ -134,11 +134,11 @@ const Pricing = () => {
                   “{t.quote}”
                 </blockquote>
                 <figcaption className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-primary/70 to-accent/50 text-sm font-semibold text-primary-fg">
+                  <div className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-primary/70 to-accent/50 text-sm font-medium text-primary-fg">
                     {t.name.split(" ").map((n) => n[0]).join("")}
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-text">{t.name}</div>
+                    <div className="text-sm font-medium text-text">{t.name}</div>
                     <div className="text-xs text-muted">{t.role}</div>
                   </div>
                 </figcaption>
@@ -149,10 +149,9 @@ const Pricing = () => {
 
         {/* CTA */}
         <div className="reveal mt-28">
-          <div className="relative overflow-hidden rounded-[28px] border border-line/10 bg-surface/70 p-10 text-center backdrop-blur-xl sm:p-16">
-            <div className="pointer-events-none absolute -top-1/2 left-1/2 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-primary/25 blur-[120px]" />
+          <div className="relative overflow-hidden rounded-xl border border-line/[0.07] bg-surface p-10 text-center sm:p-16">
             <div className="relative">
-              <h2 className="font-display text-3xl font-semibold tracking-tight text-text sm:text-[44px]">
+              <h2 className="font-display text-3xl font-medium tracking-tight text-text sm:text-[44px]">
                 Start talking without borders
               </h2>
               <p className="mx-auto mt-4 max-w-lg text-muted">

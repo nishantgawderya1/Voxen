@@ -358,6 +358,23 @@
   transform: scale(0.96);
 }
 
+/* Transcript panel — mirrors the chat panel on the left edge. */
+.transcriptPanel {
+  left: 0;
+  right: auto;
+  border-left: none;
+  border-right: 1px solid rgb(var(--c-line) / 0.07);
+  box-shadow: 20px 0 60px -20px rgb(var(--c-shadow) / 0.6);
+  animation: slideInLeft 0.15s ease;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /*  Responsive — tablets                                              */
 /* ------------------------------------------------------------------ */

@@ -7,13 +7,13 @@
 /* ------------------------------------------------------------------ */
 :root,
 .dark {
-  --c-bg: 7 8 13;
-  --c-surface: 13 15 22;
-  --c-surface-2: 20 23 33;
-  --c-elevated: 28 31 44;
+  --c-bg: 8 10 16;
+  --c-surface: 15 17 23;
+  --c-surface-2: 22 27 39;
+  --c-elevated: 22 27 39;
   --c-line: 255 255 255;
   --c-text: 244 244 248;
-  --c-muted: 142 146 168;
+  --c-muted: 139 143 168;
   --c-primary: 124 92 255;
   --c-primary-fg: 255 255 255;
   --c-accent: 34 211 238;
@@ -71,7 +71,18 @@ body {
   color: rgb(var(--c-text));
   font-family: "Inter", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.4s ease, color 0.3s ease;
+  line-height: 1.65;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 500;
+  letter-spacing: -0.025em;
 }
 
 ::selection {
@@ -103,47 +114,40 @@ body {
   }
 
   .glass {
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    backdrop-filter: blur(16px) saturate(140%);
-    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    background: rgb(var(--c-surface) / 0.92);
+    border: 1px solid rgb(var(--c-line) / 0.07);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
 
   .card {
-    @apply rounded-card border border-line/10 bg-surface/70 backdrop-blur-sm;
-    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-      border-color 0.3s ease, box-shadow 0.35s ease, background-color 0.3s ease;
+    border-radius: 12px;
+    border: 1px solid rgb(var(--c-line) / 0.07);
+    background: rgb(var(--c-surface));
+    transition: all 0.15s ease;
   }
   .card-hover:hover {
-    transform: translateY(-4px);
-    border-color: rgb(var(--c-primary) / 0.4);
-    box-shadow: 0 24px 50px -30px rgb(var(--c-primary) / 0.55);
+    background: rgb(var(--c-surface-2));
+    border-color: rgb(var(--c-line) / 0.12);
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-semibold text-primary-fg;
-    transition: transform 0.15s ease, box-shadow 0.3s ease, filter 0.2s ease;
-    box-shadow: 0 10px 30px -10px rgb(var(--c-primary) / 0.7);
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-medium text-primary-fg;
+    transition: all 0.15s ease;
   }
   .btn-primary:hover {
     filter: brightness(1.08);
-    box-shadow: 0 14px 40px -10px rgb(var(--c-primary) / 0.85);
-  }
-  .btn-primary:active {
-    transform: scale(0.97);
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line/12 bg-surface/40 px-6 py-3 font-semibold text-text;
-    transition: background-color 0.2s ease, border-color 0.2s ease,
-      transform 0.15s ease;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border px-6 py-3 font-medium text-text;
+    border-color: rgb(var(--c-line) / 0.07);
+    background: rgb(var(--c-surface));
+    transition: all 0.15s ease;
   }
   .btn-ghost:hover {
-    background: rgb(var(--c-line) / 0.06);
-    border-color: rgb(var(--c-line) / 0.22);
-  }
-  .btn-ghost:active {
-    transform: scale(0.97);
+    background: rgb(var(--c-surface-2));
+    border-color: rgb(var(--c-line) / 0.12);
   }
 
   .input-field {
@@ -172,15 +176,7 @@ body {
 /* ------------------------------------------------------------------ */
 @layer utilities {
   .text-gradient {
-    background: linear-gradient(
-      110deg,
-      rgb(var(--c-text)) 10%,
-      rgb(var(--c-primary)) 45%,
-      rgb(var(--c-accent)) 80%
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: rgb(var(--c-primary));
   }
 
   .grid-bg {
@@ -214,9 +210,8 @@ body {
 /* Scroll-reveal — driven by IntersectionObserver adding .is-visible */
 .reveal {
   opacity: 0;
-  transform: translateY(26px);
-  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateY(16px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
   will-change: opacity, transform;
 }
 .reveal.is-visible {

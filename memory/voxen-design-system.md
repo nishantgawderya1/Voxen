@@ -16,4 +16,6 @@ The Voxen frontend (React 19 + Vite + Tailwind v3) uses a redesigned design syst
 - Shared components in `src/components/`: `Aurora` (animated bg blobs), `Navbar`, `Footer`, `Brand`, `ThemeToggle`, `Icons.jsx` (inline SVGs — replaced the old lucide CDN dependency), `HeroVisual` (3D-tilt animated call mockup).
 - Fonts: Inter (body), Space Grotesk (`font-display` headings), JetBrains Mono.
 
-VideoMeet WebRTC/socket logic in `src/pages/VideoMeet.jsx` was left untouched — only the lobby + call CSS (`src/styles/videoComponent.css`) were restyled to use the same tokens.
+VideoMeet WebRTC/socket logic in `src/pages/VideoMeet.jsx` was migrated to modern addTrack/ontrack (legacy addStream caused black remote video); lobby + call CSS (`src/styles/videoComponent.css`) use the same tokens.
+
+**Polish-pass conventions (2026-07, user-specified — keep):** headings font-weight 500 with -0.025em tracking; body line-height 1.65; cards 12px radius, border `--c-line`/0.07, hover surface-2 + border 0.12, `transition: all 0.15s ease`; NO gradient text (`.text-gradient` is now solid primary), no glow/colored shadows, no marquee/float/pulse/spin decorative animations (only opacity/translateY reveals, 0.4s); banned marketing words: seamless/powerful/robust/leverage/unlock/transform etc. Live transcription (Groq whisper-large-v3): backend `routes/transcribe.js` + `transcript-update` socket event (server does `socket.join(path)` in join-call); frontend `hooks/useTranscription.js` + `components/TranscriptSidebar.jsx`; needs `GROQ_API_KEY` in backend/.env.

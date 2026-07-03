@@ -20,6 +20,7 @@ const connectToSocket = (server) => {
         connection[path] = [];
       }
       connection[path].push(socket.id);
+      socket.join(path);
 
       timeOnline[socket.id] = new Date();
 
@@ -45,6 +46,11 @@ const connectToSocket = (server) => {
 
     socket.on("signal", (toId, message) => {
       io.to(toId).emit("signal", socket.id, message);
+    });
+
+    socket.on("transcript-update", ({ roomId, text, speaker, timestamp }) => {
+      socket.to(roomId).emit("transcript-update", { text, speaker, timestamp });
+      socket.emit("transcript-update", { text, speaker, timestamp });
     });
 
     socket.on("chat-message", (data, sender) => {

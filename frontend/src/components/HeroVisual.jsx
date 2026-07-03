@@ -39,41 +39,25 @@ export default function HeroVisual() {
     };
   }, [idx]);
 
-  // Subtle 3D parallax tilt toward the cursor.
-  const onMove = (e) => {
-    const el = ref.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const px = (e.clientX - r.left) / r.width - 0.5;
-    const py = (e.clientY - r.top) / r.height - 0.5;
-    el.style.transform = `perspective(1200px) rotateX(${(-py * 8).toFixed(
-      2
-    )}deg) rotateY(${(px * 10).toFixed(2)}deg) translateZ(0)`;
-  };
-  const onLeave = () => {
-    const el = ref.current;
-    if (el) el.style.transform = "perspective(1200px) rotateX(0) rotateY(0)";
-  };
-
   const current = phrases[idx];
 
   return (
-    <div className="relative [transform-style:preserve-3d]" onMouseMove={onMove} onMouseLeave={onLeave}>
-      {/* floating language chips */}
+    <div className="relative">
+      {/* status chips */}
       <div className="pointer-events-none absolute -left-6 top-6 z-20 hidden sm:block">
-        <span className="chip animate-float shadow-soft" style={{ animationDelay: "-1s" }}>
+        <span className="chip">
           <span className="h-1.5 w-1.5 rounded-full bg-mint" /> Live · 4 languages
         </span>
       </div>
       <div className="pointer-events-none absolute -right-4 bottom-24 z-20 hidden sm:block">
-        <span className="chip animate-float shadow-soft" style={{ animationDelay: "-3s" }}>
+        <span className="chip">
           <span className="h-1.5 w-1.5 rounded-full bg-accent" /> 120ms latency
         </span>
       </div>
 
       <div
         ref={ref}
-        className="relative rounded-[24px] border border-line/10 bg-surface/70 p-3 shadow-soft backdrop-blur-xl transition-transform duration-200 ease-out will-change-transform"
+        className="relative rounded-xl border border-line/[0.07] bg-surface p-3"
       >
         {/* window chrome */}
         <div className="mb-3 flex items-center gap-2 px-2 pt-1">
@@ -82,8 +66,8 @@ export default function HeroVisual() {
           <span className="h-2.5 w-2.5 rounded-full bg-accent/80" />
           <BrandMark size={14} className="ml-2" />
           <span className="text-xs font-medium text-muted">· Product Sync</span>
-          <span className="ml-auto flex items-center gap-1.5 rounded-full bg-danger/12 px-2 py-0.5 text-[10px] font-semibold text-danger">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-danger" /> REC
+          <span className="ml-auto flex items-center gap-1.5 rounded-full bg-danger/12 px-2 py-0.5 text-[10px] font-medium text-danger">
+            <span className="h-1.5 w-1.5 rounded-full bg-danger" /> REC
           </span>
         </div>
 
@@ -96,7 +80,7 @@ export default function HeroVisual() {
             >
               <div className="absolute inset-0 bg-[radial-gradient(120%_120%_at_30%_20%,rgb(var(--c-surface)/0.15),rgb(var(--c-surface)/0.75))]" />
               <div className="absolute inset-0 grid place-items-center">
-                <div className="grid h-12 w-12 place-items-center rounded-full bg-surface/70 text-sm font-semibold text-text backdrop-blur">
+                <div className="grid h-12 w-12 place-items-center rounded-full bg-surface/70 text-sm font-medium text-text backdrop-blur">
                   {p.initials}
                 </div>
               </div>
@@ -104,7 +88,7 @@ export default function HeroVisual() {
                 {p.name}
               </span>
               {p.self && (
-                <span className="absolute right-2 top-2 rounded-md bg-primary/85 px-1.5 py-0.5 text-[9px] font-bold text-primary-fg">
+                <span className="absolute right-2 top-2 rounded-md bg-primary/85 px-1.5 py-0.5 text-[9px] font-medium text-primary-fg">
                   YOU
                 </span>
               )}
@@ -115,7 +99,7 @@ export default function HeroVisual() {
         {/* live translation caption */}
         <div className="mt-3 rounded-2xl border border-line/10 bg-bg/50 p-4 backdrop-blur">
           <div className="mb-1.5 flex items-center gap-2">
-            <span className="grid h-6 w-6 place-items-center rounded-full bg-primary/15 text-[10px] font-bold text-primary">
+            <span className="grid h-6 w-6 place-items-center rounded-full bg-primary/15 text-[10px] font-medium text-primary">
               {current.lang}
             </span>
             <span className="text-xs font-medium text-muted">Aria is speaking…</span>
@@ -123,7 +107,7 @@ export default function HeroVisual() {
               {[0, 1, 2, 3].map((b) => (
                 <span
                   key={b}
-                  className="w-0.5 rounded-full bg-primary animate-float"
+                  className="w-0.5 rounded-full bg-primary"
                   style={{ height: 8 + (b % 3) * 4, animationDelay: `${b * 120}ms`, animationDuration: "0.9s" }}
                 />
               ))}
@@ -131,31 +115,26 @@ export default function HeroVisual() {
           </div>
           <p className="text-[15px] font-medium text-text">{current.from}</p>
           <div className="mt-1.5 flex items-start gap-2">
-            <span className="mt-0.5 rounded bg-mint/15 px-1.5 py-0.5 text-[9px] font-bold text-mint">EN</span>
+            <span className="mt-0.5 rounded bg-mint/15 px-1.5 py-0.5 text-[9px] font-medium text-mint">EN</span>
             <p className="min-h-[20px] text-[15px] text-muted">
               {typed}
-              <span className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 animate-pulse bg-primary align-middle" />
+              <span className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 bg-primary align-middle" />
             </p>
           </div>
         </div>
 
-        {/* language marquee */}
-        <div className="mask-fade-x mt-3 overflow-hidden">
-          <div className="flex w-max animate-marquee gap-2">
-            {[...chips, ...chips].map((c, i) => (
-              <span
-                key={i}
-                className="whitespace-nowrap rounded-lg border border-line/10 bg-surface2/60 px-2.5 py-1 text-[11px] font-medium text-muted"
-              >
-                {c}
-              </span>
-            ))}
-          </div>
+        {/* supported languages */}
+        <div className="mt-3 flex flex-wrap justify-center gap-2">
+          {chips.map((c) => (
+            <span
+              key={c}
+              className="whitespace-nowrap rounded-lg border border-line/[0.07] bg-surface2 px-2.5 py-1 text-[11px] font-medium text-muted"
+            >
+              {c}
+            </span>
+          ))}
         </div>
       </div>
-
-      {/* soft glow under the card */}
-      <div className="absolute inset-x-8 -bottom-6 -z-10 h-24 rounded-full bg-primary/30 blur-3xl" />
     </div>
   );
 }

@@ -47,7 +47,7 @@ function HistoryComponent() {
       {/* Header */}
       <header className="sticky top-0 z-40">
         <div className="container-base">
-          <div className="mt-3 flex h-16 items-center justify-between rounded-2xl glass px-4 shadow-soft">
+          <div className="mt-3 flex h-16 items-center justify-between rounded-2xl glass px-4">
             <Brand to="/home" />
             <div className="flex items-center gap-2">
               <ThemeToggle />
@@ -63,7 +63,7 @@ function HistoryComponent() {
       {/* Body */}
       <main className="mx-auto w-full max-w-3xl flex-grow px-6 py-10">
         <div className="mb-8">
-          <h1 className="font-display text-3xl font-semibold tracking-tight text-text">
+          <h1 className="font-display text-3xl font-medium tracking-tight text-text">
             Meeting history
           </h1>
           <p className="mt-2 text-muted">Your past rooms, ready to rejoin.</p>
@@ -72,7 +72,7 @@ function HistoryComponent() {
         {loading ? (
           <div className="flex flex-col gap-3">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="h-[74px] animate-pulse rounded-card border border-line/10 bg-surface/50" />
+              <div key={i} className="h-[74px] rounded-card border border-line/10 bg-surface/50" />
             ))}
           </div>
         ) : !meetings || meetings.length === 0 ? (
@@ -81,7 +81,7 @@ function HistoryComponent() {
               <span className="material-symbols-outlined text-3xl">history</span>
             </span>
             <div>
-              <p className="font-semibold text-text">No meetings yet</p>
+              <p className="font-medium text-text">No meetings yet</p>
               <p className="mt-1 text-sm text-muted">
                 Your calls will show up here once you start one.
               </p>
@@ -102,7 +102,7 @@ function HistoryComponent() {
                     <Video size={20} />
                   </span>
                   <div className="min-w-0">
-                    <div className="truncate font-semibold text-text">
+                    <div className="truncate font-medium text-text">
                       {meeting.meetingCode}
                     </div>
                     <div className="text-sm text-muted">{formatDate(meeting.date)}</div>

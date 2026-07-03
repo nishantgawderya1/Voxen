@@ -72,7 +72,7 @@ const Features = () => {
         {/* Section head */}
         <div className="reveal mx-auto max-w-2xl text-center">
           <span className="eyebrow">Platform capabilities</span>
-          <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight text-text sm:text-[40px]">
+          <h2 className="mt-3 font-display text-3xl font-medium tracking-tight text-text sm:text-[40px]">
             Everything your calls were missing
           </h2>
           <p className="mt-4 text-muted">
@@ -95,7 +95,7 @@ const Features = () => {
                   <IconEl size={22} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-text">{f.title}</h3>
+                  <h3 className="text-lg font-medium text-text">{f.title}</h3>
                   <p className="mt-1.5 text-sm leading-relaxed text-muted">{f.body}</p>
                 </div>
               </div>
@@ -107,7 +107,7 @@ const Features = () => {
         <div id="how" className="mt-28 scroll-mt-28">
           <div className="reveal mx-auto max-w-2xl text-center">
             <span className="eyebrow">How it works</span>
-            <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight text-text sm:text-[40px]">
+            <h2 className="mt-3 font-display text-3xl font-medium tracking-tight text-text sm:text-[40px]">
               Up and running in 60 seconds
             </h2>
           </div>
@@ -118,14 +118,14 @@ const Features = () => {
               const IconEl = s.icon;
               return (
                 <div key={s.title} className="reveal relative" data-reveal-delay={i * 100}>
-                  <div className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-2xl border border-line/10 bg-surface text-primary shadow-soft">
+                  <div className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-2xl border border-line/10 bg-surface text-primary">
                     <IconEl size={26} />
-                    <span className="absolute -right-1 -top-1 grid h-6 w-6 place-items-center rounded-full bg-primary text-xs font-bold text-primary-fg">
+                    <span className="absolute -right-1 -top-1 grid h-6 w-6 place-items-center rounded-full bg-primary text-xs font-medium text-primary-fg">
                       {i + 1}
                     </span>
                   </div>
                   <div className="text-center">
-                    <h3 className="text-lg font-semibold text-text">{s.title}</h3>
+                    <h3 className="text-lg font-medium text-text">{s.title}</h3>
                     <p className="mt-1.5 text-sm text-muted">{s.body}</p>
                   </div>
                 </div>
@@ -138,7 +138,7 @@ const Features = () => {
         <div className="mt-28 grid items-center gap-10 lg:grid-cols-2">
           <div className="reveal">
             <span className="eyebrow">Live demo</span>
-            <h2 className="mt-3 font-display text-3xl font-semibold leading-tight tracking-tight text-text sm:text-[40px]">
+            <h2 className="mt-3 font-display text-3xl font-medium leading-tight tracking-tight text-text sm:text-[40px]">
               Your words, their language. Instantly.
             </h2>
             <p className="mt-4 text-muted">
@@ -155,9 +155,9 @@ const Features = () => {
             </div>
           </div>
 
-          <div className="reveal card p-5 shadow-soft" data-reveal-delay="100">
+          <div className="reveal card p-5" data-reveal-delay="100">
             <div className="mb-4 flex items-center gap-2 border-b border-line/10 pb-4">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-danger" />
+              <span className="h-2 w-2 rounded-full bg-danger" />
               <span className="font-mono text-[11px] uppercase tracking-widest text-muted">
                 Live transcript
               </span>
@@ -165,7 +165,7 @@ const Features = () => {
             <div className="space-y-5">
               <div>
                 <div className="mb-1 flex items-center gap-2">
-                  <span className="text-xs font-semibold text-primary">Aman R.</span>
+                  <span className="text-xs font-medium text-primary">Aman R.</span>
                   <span className="font-mono text-[10px] text-muted">10:42</span>
                 </div>
                 <p className="text-[15px] text-text">
@@ -182,7 +182,7 @@ const Features = () => {
               </div>
               <div className="opacity-70">
                 <div className="mb-1 flex items-center gap-2">
-                  <span className="text-xs font-semibold text-text">Sarah J.</span>
+                  <span className="text-xs font-medium text-text">Sarah J.</span>
                   <span className="font-mono text-[10px] text-muted">10:42</span>
                 </div>
                 <p className="text-[15px] text-text">

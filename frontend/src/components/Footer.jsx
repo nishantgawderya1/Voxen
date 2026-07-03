@@ -21,13 +21,13 @@ export default function Footer() {
               Speak your language — be understood in theirs.
             </p>
             <div className="flex items-center gap-2 text-xs text-muted">
-              <span className="h-2 w-2 rounded-full bg-mint animate-pulse" />
+              <span className="h-2 w-2 rounded-full bg-mint" />
               All systems operational · 99.9% uptime
             </div>
           </div>
           {groups.map((g) => (
             <div key={g.title}>
-              <div className="mb-4 text-xs font-semibold uppercase tracking-wider text-text">
+              <div className="mb-4 text-xs font-medium uppercase tracking-wider text-text">
                 {g.title}
               </div>
               <ul className="space-y-2.5 text-sm text-muted">
