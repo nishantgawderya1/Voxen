@@ -21,6 +21,11 @@ function HistoryComponent() {
         setMeetings(Array.isArray(history) ? history.slice().reverse() : history);
       } catch (e) {
         console.log(e);
+        // Stale token was cleared by AuthContext — send the user to sign in.
+        if (e.response?.status === 401) {
+          router("/auth", { replace: true });
+          return;
+        }
       } finally {
         setLoading(false);
       }
@@ -103,9 +108,12 @@ function HistoryComponent() {
                   </span>
                   <div className="min-w-0">
                     <div className="truncate font-medium text-text">
-                      {meeting.meetingCode}
+                      {meeting.name || meeting.meetingCode}
                     </div>
-                    <div className="text-sm text-muted">{formatDate(meeting.date)}</div>
+                    <div className="truncate text-sm text-muted">
+                      {meeting.name ? `${meeting.meetingCode} · ` : ""}
+                      {formatDate(meeting.date)}
+                    </div>
                   </div>
                 </div>
                 <button

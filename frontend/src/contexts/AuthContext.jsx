@@ -48,11 +48,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  let addToUserHistory = async (meetingCode) => {
+  let addToUserHistory = async (meetingCode, meetingName = "") => {
     try {
       let request = await client.post("/add_to_activity", {
         token: localStorage.getItem("token"),
         meeting_code: meetingCode,
+        meeting_name: meetingName,
       });
       return request;
     } catch (e) {
@@ -67,6 +68,11 @@ export const AuthProvider = ({ children }) => {
       });
       return request.data;
     } catch (e) {
+      // A 401 means the stored token is stale (tokens rotate on each login).
+      // Clear it so route guards send the user back to sign-in.
+      if (e.response?.status === 401) {
+        localStorage.removeItem("token");
+      }
       throw e;
     }
   };

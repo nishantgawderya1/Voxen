@@ -10,6 +10,7 @@ import { Video, ArrowRight } from "../components/Icons.jsx";
 function HomeComponent() {
   const router = useNavigate();
   const [meetingCode, setMeetingCode] = useState("");
+  const [meetingName, setMeetingName] = useState("");
 
   const handleJoinVideoCall = () => {
     if (meetingCode.trim() === "") return;
@@ -18,7 +19,8 @@ function HomeComponent() {
 
   const handleCreateMeeting = () => {
     const code = Math.random().toString(36).substring(2, 9);
-    router(`/${code}`);
+    const name = meetingName.trim();
+    router(name ? `/${code}?name=${encodeURIComponent(name)}` : `/${code}`);
   };
 
   const handleLogout = () => {
@@ -74,6 +76,15 @@ function HomeComponent() {
 
           <div className="card p-6 sm:p-8">
             {/* Create */}
+            <input
+              type="text"
+              placeholder="Meeting name — what's it about? (optional)"
+              value={meetingName}
+              onChange={(e) => setMeetingName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleCreateMeeting()}
+              maxLength={80}
+              className="input-field mb-3 h-12"
+            />
             <button
               onClick={handleCreateMeeting}
               className="btn-primary group w-full py-4 text-base"

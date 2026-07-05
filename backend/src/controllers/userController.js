@@ -71,7 +71,7 @@ const login = async (req, res) => {
 };
 
 const addToActivity = async (req, res) => {
-  const { token, meeting_code } = req.body;
+  const { token, meeting_code, meeting_name } = req.body;
 
   try {
     const user = await User.findOne({ token: token });
@@ -85,6 +85,7 @@ const addToActivity = async (req, res) => {
     const newMeeting = new Meeting({
       user_id: user.username,
       meetingCode: meeting_code,
+      name: meeting_name || "",
     });
 
     await newMeeting.save();

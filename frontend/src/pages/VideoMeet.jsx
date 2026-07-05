@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import { AuthContext } from "../contexts/AuthContext.jsx";
 import server_url from "../environment.js";
@@ -74,9 +74,14 @@ export default function VideoMeet() {
   let [username, setUsername] = useState("");
   let [showTranscript, setShowTranscript] = useState(false);
   let [callStream, setCallStream] = useState(null);
+  let [facingMode, setFacingMode] = useState("user");
+  let [hasMultipleCameras, setHasMultipleCameras] = useState(false);
+  let facingModeRef = useRef("user");
 
   let router = useNavigate();
   let { url } = useParams();
+  let [searchParams] = useSearchParams();
+  let meetingName = searchParams.get("name") || "";
   let { addToUserHistory } = useContext(AuthContext);
 
   let [messages, setMessages] = useState([]);
@@ -128,7 +133,19 @@ export default function VideoMeet() {
 
   useEffect(() => {
     getPermissions();
+
+    navigator.mediaDevices
+      ?.enumerateDevices?.()
+      .then((devices) => {
+        const cams = devices.filter((d) => d.kind === "videoinput");
+        setHasMultipleCameras(cams.length > 1);
+      })
+      .catch(() => {});
   }, []);
+
+  const videoConstraints = () => ({
+    facingMode: { ideal: facingModeRef.current },
+  });
 
   let silence = () => {
     let ctx = new AudioContext();
@@ -221,7 +238,7 @@ export default function VideoMeet() {
     if ((video && videoAvailable) || (audio && audioAvailable)) {
       navigator.mediaDevices
         .getUserMedia({
-          video: video,
+          video: video ? videoConstraints() : false,
           audio: audio ? AUDIO_CONSTRAINTS : false,
         })
         .then(getUserMediaSuccess)
@@ -489,6 +506,17 @@ export default function VideoMeet() {
     setScreen(!screen);
   };
 
+  let handleSwitchCamera = () => {
+    const next = facingModeRef.current === "user" ? "environment" : "user";
+    facingModeRef.current = next;
+    setFacingMode(next);
+    // Re-acquire with the new facing; attachStream() replaceTracks the new
+    // video into every peer connection, so remotes keep receiving.
+    if (video && videoAvailable && !screen) {
+      getUserMedia();
+    }
+  };
+
   let handleEndCall = () => {
     try {
       let tracks = localVideoRef.current.srcObject.getTracks();
@@ -541,8 +569,9 @@ export default function VideoMeet() {
     setAskForUsername(false);
     getMedia();
     setCallStream(window.localStream || null);
-    if (url) {
-      addToUserHistory(url).catch((e) => console.log(e));
+    // Guests have no token — recording history for them just 401s.
+    if (url && isAuthenticated()) {
+      addToUserHistory(url, meetingName).catch((e) => console.log(e));
     }
   };
 
@@ -636,7 +665,10 @@ export default function VideoMeet() {
                 <video
                   data-socket={video.socketId}
                   ref={(ref) => {
-                    if (ref && video.stream) {
+                    // Only assign when the stream actually changed — this
+                    // callback runs on every render (e.g. each chat keystroke),
+                    // and re-setting srcObject restarts playback → flicker.
+                    if (ref && video.stream && ref.srcObject !== video.stream) {
                       ref.srcObject = video.stream;
                     }
                   }}
@@ -677,6 +709,20 @@ export default function VideoMeet() {
                 {video ? "videocam" : "videocam_off"}
               </span>
             </button>
+
+            {hasMultipleCameras && (
+              <button
+                className="controlButton"
+                onClick={handleSwitchCamera}
+                title={
+                  facingMode === "user"
+                    ? "Switch to rear camera"
+                    : "Switch to front camera"
+                }
+              >
+                <span className="material-symbols-outlined">cameraswitch</span>
+              </button>
+            )}
 
             {screenAvailable && (
               <button
