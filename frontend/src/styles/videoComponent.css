@@ -116,6 +116,7 @@
   inset: 0;
   z-index: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
@@ -358,6 +359,559 @@
   transform: scale(0.96);
 }
 
+/* ------------------------------------------------------------------ */
+/*  Meeting info bar                                                   */
+/* ------------------------------------------------------------------ */
+.meetInfoBar {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px);
+  max-width: calc(100vw - 32px);
+}
+
+.meetInfoName {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgb(var(--c-text));
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meetInfoItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: rgb(var(--c-muted));
+  font-variant-numeric: tabular-nums;
+  border-left: 1px solid rgb(var(--c-line) / 0.12);
+  padding-left: 10px;
+}
+
+.meetInfoHost {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgb(var(--c-primary));
+  background: rgb(var(--c-primary) / 0.12);
+  padding: 3px 8px;
+  border-radius: 9999px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Host admission toasts                                              */
+/* ------------------------------------------------------------------ */
+.admitToasts {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 300px;
+  max-width: calc(100vw - 32px);
+}
+
+.admitToast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgb(var(--c-surface));
+  border: 1px solid rgb(var(--c-line) / 0.12);
+  box-shadow: 0 16px 40px -16px rgb(var(--c-shadow) / 0.6);
+  animation: toastIn 0.25s ease both;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+.admitToastText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.admitToastName {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgb(var(--c-text));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admitToastSub {
+  font-size: 11px;
+  color: rgb(var(--c-muted));
+}
+
+.pendingActions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.admitBtn,
+.denyBtn {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.admitBtn {
+  background: rgb(var(--c-primary));
+  color: rgb(var(--c-primary-fg));
+}
+.admitBtn:hover {
+  filter: brightness(1.08);
+}
+
+.denyBtn {
+  background: transparent;
+  border: 1px solid rgb(var(--c-line) / 0.12);
+  color: rgb(var(--c-muted));
+}
+.denyBtn:hover {
+  background: rgb(var(--c-danger) / 0.12);
+  border-color: rgb(var(--c-danger) / 0.3);
+  color: rgb(var(--c-danger));
+}
+
+/* ------------------------------------------------------------------ */
+/*  Floating reactions                                                 */
+/* ------------------------------------------------------------------ */
+.reactionsOverlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 28;
+  overflow: hidden;
+}
+
+.reactionFloat {
+  position: absolute;
+  bottom: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  animation: reactionRise 2.1s ease-out forwards;
+}
+
+@keyframes reactionRise {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  12% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-38vh);
+  }
+}
+
+.reactionEmoji {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.reactionName {
+  font-size: 10px;
+  color: rgb(var(--c-text));
+  background: rgb(var(--c-bg) / 0.6);
+  padding: 2px 7px;
+  border-radius: 9999px;
+  backdrop-filter: blur(6px);
+}
+
+.reactionsAnchor {
+  position: relative;
+}
+
+.reactionsPopover {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 9999px;
+  background: rgb(var(--c-surface));
+  border: 1px solid rgb(var(--c-line) / 0.12);
+  box-shadow: 0 16px 40px -16px rgb(var(--c-shadow) / 0.6);
+  animation: toastIn 0.15s ease both;
+}
+
+.reactionChoice {
+  width: 38px;
+  height: 38px;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.reactionChoice:hover {
+  background: rgb(var(--c-line) / 0.08);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Tile badges (mute / hand / host)                                   */
+/* ------------------------------------------------------------------ */
+.tileBadges {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 6px;
+}
+
+.tileBadge {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  background: rgb(var(--c-bg) / 0.6);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgb(var(--c-line) / 0.1);
+  font-size: 14px;
+}
+
+.tileBadge.muted {
+  color: rgb(var(--c-danger));
+}
+
+.tileBadge .material-symbols-outlined {
+  font-size: 16px;
+}
+
+.tileHost {
+  margin-left: 6px;
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgb(var(--c-primary));
+  background: rgb(var(--c-primary) / 0.15);
+  padding: 2px 6px;
+  border-radius: 9999px;
+}
+
+/* Waiting-room pulse icon */
+.waitingPulse {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  border-radius: 20px;
+  background: rgb(var(--c-primary) / 0.1);
+  border: 1px solid rgb(var(--c-primary) / 0.25);
+}
+
+/* Neutral (non-alert) dock badge */
+.chatBadge.neutral {
+  background: rgb(var(--c-surface-2));
+  color: rgb(var(--c-muted));
+  border-color: rgb(var(--c-line) / 0.15);
+}
+
+/* Pre-join toggles on the lobby preview */
+.preJoinToggle {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  border: 1px solid rgb(var(--c-line) / 0.12);
+  background: rgb(var(--c-bg) / 0.6);
+  color: rgb(var(--c-text));
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.preJoinToggle:hover {
+  background: rgb(var(--c-bg) / 0.8);
+}
+.preJoinToggle.off {
+  background: rgb(var(--c-danger) / 0.16);
+  border-color: rgb(var(--c-danger) / 0.35);
+  color: rgb(var(--c-danger));
+}
+.preJoinToggle .material-symbols-outlined {
+  font-size: 20px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Participants panel                                                 */
+/* ------------------------------------------------------------------ */
+.countPill {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  margin-left: 6px;
+  border-radius: 9999px;
+  background: rgb(var(--c-surface-2));
+  color: rgb(var(--c-muted));
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.pendingBlock {
+  border: 1px solid rgb(var(--c-primary) / 0.25);
+  background: rgb(var(--c-primary) / 0.06);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 4px;
+}
+
+.pendingTitle {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgb(var(--c-primary));
+  margin-bottom: 8px;
+}
+
+.pendingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.pendingName {
+  font-size: 13px;
+  color: rgb(var(--c-text));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.participantRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  transition: background-color 0.15s ease;
+}
+.participantRow:hover {
+  background: rgb(var(--c-line) / 0.05);
+}
+
+.participantAvatar {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9999px;
+  background: rgb(var(--c-primary) / 0.14);
+  color: rgb(var(--c-primary));
+  font-size: 14px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.participantInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.participantName {
+  font-size: 13px;
+  color: rgb(var(--c-text));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hostBadge {
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgb(var(--c-primary));
+  background: rgb(var(--c-primary) / 0.12);
+  padding: 2px 7px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.participantState {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgb(var(--c-muted));
+}
+
+.participantState .stateIcon {
+  font-size: 17px;
+}
+.participantState .stateIcon.off {
+  color: rgb(var(--c-danger));
+}
+
+.handFlag {
+  font-size: 14px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Invite modal                                                       */
+/* ------------------------------------------------------------------ */
+.inviteBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(var(--c-shadow) / 0.55);
+  backdrop-filter: blur(4px);
+  animation: fadeInBg 0.15s ease both;
+}
+
+@keyframes fadeInBg {
+  from {
+    opacity: 0;
+  }
+}
+
+.inviteModal {
+  width: 100%;
+  max-width: 440px;
+  border-radius: 16px;
+  background: rgb(var(--c-surface));
+  border: 1px solid rgb(var(--c-line) / 0.12);
+  box-shadow: 0 32px 80px -32px rgb(var(--c-shadow) / 0.8);
+  padding: 20px;
+  animation: toastIn 0.2s ease both;
+}
+
+.inviteHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 15px;
+  font-weight: 500;
+  color: rgb(var(--c-text));
+  margin-bottom: 6px;
+}
+
+.inviteHeader button {
+  display: flex;
+  background: transparent;
+  border: none;
+  color: rgb(var(--c-muted));
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+}
+.inviteHeader button:hover {
+  color: rgb(var(--c-text));
+  background: rgb(var(--c-line) / 0.06);
+}
+
+.inviteHint {
+  font-size: 13px;
+  color: rgb(var(--c-muted));
+  margin: 0 0 14px;
+}
+
+.inviteLinkBox {
+  border: 1px solid rgb(var(--c-line) / 0.12);
+  background: rgb(var(--c-bg));
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.inviteLink {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  color: rgb(var(--c-text));
+  word-break: break-all;
+}
+
+.inviteActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.inviteBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid rgb(var(--c-line) / 0.12);
+  background: rgb(var(--c-surface-2));
+  color: rgb(var(--c-text));
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.inviteBtn:hover {
+  border-color: rgb(var(--c-line) / 0.2);
+}
+
+.inviteBtn.primary {
+  background: rgb(var(--c-primary));
+  border-color: transparent;
+  color: rgb(var(--c-primary-fg));
+}
+.inviteBtn.primary:hover {
+  filter: brightness(1.08);
+}
+
+.inviteBtn .material-symbols-outlined {
+  font-size: 17px;
+}
+
 /* Transcript panel — mirrors the chat panel on the left edge. */
 .transcriptPanel {
   left: 0;
@@ -432,6 +986,29 @@
     gap: 8px;
     padding: 9px 12px;
     max-width: calc(100vw - 20px);
+    flex-wrap: wrap;
+    justify-content: center;
+    border-radius: 22px;
+  }
+
+  .meetInfoBar {
+    top: 10px;
+    left: 10px;
+    padding: 6px 10px;
+    gap: 8px;
+  }
+  .meetInfoName {
+    max-width: 130px;
+    font-size: 12px;
+  }
+
+  .admitToasts {
+    top: 56px;
+    right: 10px;
+  }
+
+  .reactionFloat {
+    bottom: 170px;
   }
 
   .controlButton {

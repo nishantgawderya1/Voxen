@@ -9,7 +9,11 @@ import Aurora from "../components/Aurora.jsx";
 import { isAuthenticated } from "../utils/auth.js";
 import useTranscription from "../hooks/useTranscription.js";
 import TranscriptSidebar from "../components/TranscriptSidebar.jsx";
+import ParticipantsPanel from "../components/ParticipantsPanel.jsx";
+import InviteModal from "../components/InviteModal.jsx";
 import "../styles/videoComponent.css";
+
+const REACTION_EMOJIS = ["👍", "❤️", "😂", "🎉", "👏"];
 
 var connections = {};
 
@@ -70,13 +74,38 @@ export default function VideoMeet() {
   let [screenAvailable, setScreenAvailable] = useState();
   let [showModal, setModal] = useState();
 
-  let [askForUsername, setAskForUsername] = useState(true);
+  // Join lifecycle: lobby → (waiting | call), waiting → (call | denied)
+  let [phase, setPhase] = useState("lobby");
   let [username, setUsername] = useState("");
   let [showTranscript, setShowTranscript] = useState(false);
   let [callStream, setCallStream] = useState(null);
   let [facingMode, setFacingMode] = useState("user");
   let [hasMultipleCameras, setHasMultipleCameras] = useState(false);
   let facingModeRef = useRef("user");
+
+  // Pre-join device choices (Meet-style lobby toggles)
+  let [preJoinAudio, setPreJoinAudio] = useState(true);
+  let [preJoinVideo, setPreJoinVideo] = useState(true);
+
+  // Meeting metadata mirrored from the server
+  let [roomMeta, setRoomMeta] = useState({
+    host: null,
+    names: {},
+    media: {},
+    hands: {},
+  });
+  let [selfId, setSelfId] = useState(null);
+  let [pendingRequests, setPendingRequests] = useState([]);
+  let [showParticipants, setShowParticipants] = useState(false);
+  let [showInvite, setShowInvite] = useState(false);
+  let [showReactions, setShowReactions] = useState(false);
+  let [handRaised, setHandRaised] = useState(false);
+  let [reactions, setReactions] = useState([]);
+  let [elapsed, setElapsed] = useState("00:00");
+  let callStartRef = useRef(null);
+  let reactionKeyRef = useRef(0);
+
+  const isHost = selfId && roomMeta.host === selfId;
 
   let router = useNavigate();
   let { url } = useParams();
@@ -146,6 +175,23 @@ export default function VideoMeet() {
   const videoConstraints = () => ({
     facingMode: { ideal: facingModeRef.current },
   });
+
+  // Elapsed-time ticker, runs while in the call.
+  useEffect(() => {
+    if (phase !== "call") return;
+    if (!callStartRef.current) callStartRef.current = Date.now();
+    const tick = setInterval(() => {
+      const s = Math.floor((Date.now() - callStartRef.current) / 1000);
+      const mm = String(Math.floor(s / 60)).padStart(2, "0");
+      const ss = String(s % 60).padStart(2, "0");
+      setElapsed(
+        s >= 3600
+          ? `${Math.floor(s / 3600)}:${String(Math.floor((s % 3600) / 60)).padStart(2, "0")}:${ss}`
+          : `${mm}:${ss}`
+      );
+    }, 1000);
+    return () => clearInterval(tick);
+  }, [phase]);
 
   let silence = () => {
     let ctx = new AudioContext();
@@ -315,11 +361,82 @@ export default function VideoMeet() {
     socketRef.current.on("signal", gotMessageFromServer);
 
     socketRef.current.on("connect", () => {
-      socketRef.current.emit("join-call", window.location.href);
+      socketRef.current.emit(
+        "join-call",
+        window.location.href,
+        (username || "Guest").trim()
+      );
 
       socketIdRef.current = socketRef.current.id;
+      setSelfId(socketRef.current.id);
 
       socketRef.current.on("chat-message", addMessage);
+
+      // ---- Admission lifecycle -------------------------------------------
+      socketRef.current.on("waiting-room", () => {
+        setPhase("waiting");
+      });
+
+      socketRef.current.on("admitted", (meta) => {
+        setRoomMeta(meta);
+        setPhase("call");
+        // Tell the room our actual device state (pre-join toggles applied).
+        socketRef.current.emit("media-state", {
+          audio: preJoinAudio && audioAvailable,
+          video: preJoinVideo && videoAvailable,
+        });
+      });
+
+      socketRef.current.on("join-denied", () => {
+        setPhase("denied");
+        try {
+          socketRef.current.disconnect();
+        } catch (e) {
+          console.log(e);
+        }
+      });
+
+      socketRef.current.on("join-request", (id, name) => {
+        setPendingRequests((prev) =>
+          prev.some((p) => p.id === id)
+            ? prev
+            : [...prev, { id, username: name }]
+        );
+      });
+
+      socketRef.current.on("join-request-cancelled", (id) => {
+        setPendingRequests((prev) => prev.filter((p) => p.id !== id));
+      });
+
+      socketRef.current.on("host-changed", (newHost, meta) => {
+        setRoomMeta(meta);
+      });
+
+      // ---- Live participant state ----------------------------------------
+      socketRef.current.on("media-state", (id, state) => {
+        setRoomMeta((m) => ({
+          ...m,
+          media: { ...m.media, [id]: state },
+        }));
+      });
+
+      socketRef.current.on("raise-hand", (id, raised) => {
+        setRoomMeta((m) => {
+          const hands = { ...m.hands };
+          if (raised) hands[id] = true;
+          else delete hands[id];
+          return { ...m, hands };
+        });
+      });
+
+      socketRef.current.on("reaction", (id, emoji, name) => {
+        const key = ++reactionKeyRef.current;
+        const left = 38 + Math.round(((key * 37) % 25)); // deterministic spread
+        setReactions((prev) => [...prev, { key, emoji, name, left }]);
+        setTimeout(() => {
+          setReactions((prev) => prev.filter((r) => r.key !== key));
+        }, 2200);
+      });
 
       socketRef.current.on("user-left", (id) => {
         // Close and drop the peer connection so it can be re-established
@@ -339,9 +456,20 @@ export default function VideoMeet() {
           videoRef.current = updatedVideos;
           return updatedVideos;
         });
+        setRoomMeta((m) => {
+          const names = { ...m.names };
+          const media = { ...m.media };
+          const hands = { ...m.hands };
+          delete names[id];
+          delete media[id];
+          delete hands[id];
+          return { ...m, names, media, hands };
+        });
+        setPendingRequests((prev) => prev.filter((p) => p.id !== id));
       });
 
-      socketRef.current.on("user-joined", (id, clients) => {
+      socketRef.current.on("user-joined", (id, clients, meta) => {
+        if (meta) setRoomMeta(meta);
         clients.forEach((socketListId) => {
           // Don't tear down peer connections we already have — the server
           // broadcasts the full participant list on every join, and recreating
@@ -495,11 +623,15 @@ export default function VideoMeet() {
   }, [screen]);
 
   let handleVideo = () => {
-    setVideo(!video);
+    const next = !video;
+    setVideo(next);
+    socketRef.current?.emit("media-state", { audio: !!audio, video: next });
   };
 
   let handleAudio = () => {
-    setAudio(!audio);
+    const next = !audio;
+    setAudio(next);
+    socketRef.current?.emit("media-state", { audio: next, video: !!video });
   };
 
   let handleScreen = () => {
@@ -560,13 +692,13 @@ export default function VideoMeet() {
   };
 
   let getMedia = () => {
-    setVideo(videoAvailable);
-    setAudio(audioAvailable);
+    setVideo(videoAvailable && preJoinVideo);
+    setAudio(audioAvailable && preJoinAudio);
     connectToSocketServer();
   };
 
   const connect = () => {
-    setAskForUsername(false);
+    if (!username.trim()) return;
     getMedia();
     setCallStream(window.localStream || null);
     // Guests have no token — recording history for them just 401s.
@@ -575,16 +707,71 @@ export default function VideoMeet() {
     }
   };
 
+  // Live-toggle the lobby preview tracks so what you see is what you join with.
+  const togglePreJoin = (kind) => {
+    const stream = window.localStream;
+    if (kind === "audio") {
+      setPreJoinAudio((v) => {
+        const next = !v;
+        stream?.getAudioTracks().forEach((t) => (t.enabled = next));
+        return next;
+      });
+    } else {
+      setPreJoinVideo((v) => {
+        const next = !v;
+        stream?.getVideoTracks().forEach((t) => (t.enabled = next));
+        return next;
+      });
+    }
+  };
+
+  const cancelWaiting = () => {
+    try {
+      socketRef.current?.disconnect();
+    } catch (e) {
+      console.log(e);
+    }
+    try {
+      window.localStream?.getTracks().forEach((t) => t.stop());
+    } catch (e) {
+      console.log(e);
+    }
+    router(isAuthenticated() ? "/home" : "/");
+  };
+
+  const admitUser = (id) => {
+    socketRef.current?.emit("admit-user", id);
+    setPendingRequests((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const denyUser = (id) => {
+    socketRef.current?.emit("deny-user", id);
+    setPendingRequests((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const toggleHand = () => {
+    setHandRaised((v) => {
+      const next = !v;
+      socketRef.current?.emit("raise-hand", next);
+      return next;
+    });
+  };
+
+  const sendReaction = (emoji) => {
+    socketRef.current?.emit("reaction", emoji);
+    setShowReactions(false);
+  };
+
   useTranscription(
     callStream,
     socketRef.current,
     window.location.href,
-    !askForUsername && !!callStream
+    phase === "call" && !!callStream
   );
 
   return (
     <div className="min-h-screen bg-bg text-text">
-      {askForUsername ? (
+      {phase === "lobby" && (
         <div className="relative flex min-h-screen flex-col">
           <Aurora />
 
@@ -613,6 +800,27 @@ export default function VideoMeet() {
                       Camera preview
                     </span>
                   </div>
+                  {/* Pre-join device toggles */}
+                  <div className="absolute bottom-4 right-4 flex items-center gap-2">
+                    <button
+                      onClick={() => togglePreJoin("audio")}
+                      title={preJoinAudio ? "Join with mic off" : "Join with mic on"}
+                      className={`preJoinToggle ${preJoinAudio ? "" : "off"}`}
+                    >
+                      <span className="material-symbols-outlined">
+                        {preJoinAudio ? "mic" : "mic_off"}
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => togglePreJoin("video")}
+                      title={preJoinVideo ? "Join with camera off" : "Join with camera on"}
+                      className={`preJoinToggle ${preJoinVideo ? "" : "off"}`}
+                    >
+                      <span className="material-symbols-outlined">
+                        {preJoinVideo ? "videocam" : "videocam_off"}
+                      </span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -638,9 +846,13 @@ export default function VideoMeet() {
                     onKeyDown={(e) => e.key === "Enter" && connect()}
                     className="input-field h-12"
                   />
-                  <button onClick={connect} className="btn-primary h-12 text-base">
+                  <button
+                    onClick={connect}
+                    disabled={!username.trim()}
+                    className="btn-primary h-12 text-base disabled:cursor-not-allowed disabled:opacity-50"
+                  >
                     <span className="material-symbols-outlined text-[20px]">videocam</span>
-                    Join meeting
+                    Ask to join
                   </button>
                 </div>
                 <p className="mt-4 text-xs text-muted">
@@ -650,36 +862,181 @@ export default function VideoMeet() {
             </div>
           </main>
         </div>
-      ) : (
+      )}
+
+      {phase === "waiting" && (
+        <div className="relative flex min-h-screen flex-col">
+          <Aurora />
+          <header className="relative z-10 flex items-center justify-between p-6">
+            <Brand to="/home" />
+            <ThemeToggle />
+          </header>
+          <main className="relative z-10 flex flex-grow flex-col items-center justify-center gap-6 px-6 pb-16 text-center">
+            <div className="waitingPulse">
+              <span className="material-symbols-outlined text-[34px] text-primary">
+                meeting_room
+              </span>
+            </div>
+            <div>
+              <h2 className="font-display text-2xl font-medium tracking-tight text-text sm:text-3xl">
+                Asking to join…
+              </h2>
+              <p className="mt-2 max-w-sm text-muted">
+                {meetingName ? (
+                  <>
+                    You'll enter <span className="text-text">{meetingName}</span>{" "}
+                    as soon as the host lets you in.
+                  </>
+                ) : (
+                  "You'll enter as soon as the host lets you in."
+                )}
+              </p>
+            </div>
+            <button onClick={cancelWaiting} className="btn-ghost px-6 py-2.5 text-sm">
+              Cancel
+            </button>
+          </main>
+        </div>
+      )}
+
+      {phase === "denied" && (
+        <div className="relative flex min-h-screen flex-col">
+          <Aurora />
+          <header className="relative z-10 flex items-center justify-between p-6">
+            <Brand to="/home" />
+            <ThemeToggle />
+          </header>
+          <main className="relative z-10 flex flex-grow flex-col items-center justify-center gap-6 px-6 pb-16 text-center">
+            <span className="grid h-16 w-16 place-items-center rounded-2xl bg-danger/12 text-danger">
+              <span className="material-symbols-outlined text-[30px]">block</span>
+            </span>
+            <div>
+              <h2 className="font-display text-2xl font-medium tracking-tight text-text sm:text-3xl">
+                You weren't let in
+              </h2>
+              <p className="mt-2 max-w-sm text-muted">
+                The host declined your request to join this meeting.
+              </p>
+            </div>
+            <button
+              onClick={() => router(isAuthenticated() ? "/home" : "/")}
+              className="btn-primary px-6 py-2.5 text-sm"
+            >
+              Back to home
+            </button>
+          </main>
+        </div>
+      )}
+
+      {phase === "call" && (
         <div className="meetVideoContainer">
+          {/* Meeting info bar */}
+          <div className="meetInfoBar">
+            <span className="meetInfoName">
+              {meetingName || "Voxen meeting"}
+            </span>
+            <span className="meetInfoItem">{elapsed}</span>
+            <span className="meetInfoItem">
+              <span className="material-symbols-outlined text-[15px]">group</span>
+              {Object.keys(roomMeta.names).length || 1}
+            </span>
+            {isHost && <span className="meetInfoHost">Host</span>}
+          </div>
+
+          {/* Host admission toasts */}
+          {isHost && pendingRequests.length > 0 && (
+            <div className="admitToasts">
+              {pendingRequests.map((p) => (
+                <div className="admitToast" key={p.id}>
+                  <div className="admitToastText">
+                    <span className="admitToastName">{p.username}</span>
+                    <span className="admitToastSub">wants to join</span>
+                  </div>
+                  <div className="pendingActions">
+                    <button className="admitBtn" onClick={() => admitUser(p.id)}>
+                      Admit
+                    </button>
+                    <button className="denyBtn" onClick={() => denyUser(p.id)}>
+                      Deny
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Floating reactions */}
+          <div className="reactionsOverlay" aria-hidden>
+            {reactions.map((r) => (
+              <div className="reactionFloat" key={r.key} style={{ left: `${r.left}%` }}>
+                <span className="reactionEmoji">{r.emoji}</span>
+                <span className="reactionName">{r.name}</span>
+              </div>
+            ))}
+          </div>
+
           <div className="conferenceView">
             {videos.length === 0 && (
               <div className="emptyConference">
-                Waiting for others to join… open this same link in another tab
-                or share it to invite people.
+                <p>Waiting for others to join…</p>
+                <button
+                  className="btn-primary mt-4 px-5 py-2.5 text-sm"
+                  onClick={() => setShowInvite(true)}
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    person_add
+                  </span>
+                  Invite people
+                </button>
               </div>
             )}
 
-            {videos.map((video) => (
-              <div key={video.socketId}>
-                <video
-                  data-socket={video.socketId}
-                  ref={(ref) => {
-                    // Only assign when the stream actually changed — this
-                    // callback runs on every render (e.g. each chat keystroke),
-                    // and re-setting srcObject restarts playback → flicker.
-                    if (ref && video.stream && ref.srcObject !== video.stream) {
-                      ref.srcObject = video.stream;
-                    }
-                  }}
-                  autoPlay
-                ></video>
-                <h2>
-                  <span className="dot" />
-                  Participant · {video.socketId.slice(0, 5)}
-                </h2>
-              </div>
-            ))}
+            {videos.map((video) => {
+              const media = roomMeta.media[video.socketId];
+              const name =
+                roomMeta.names[video.socketId] ||
+                `Participant · ${video.socketId.slice(0, 5)}`;
+              return (
+                <div key={video.socketId}>
+                  <video
+                    data-socket={video.socketId}
+                    ref={(ref) => {
+                      // Only assign when the stream actually changed — this
+                      // callback runs on every render (e.g. each chat keystroke),
+                      // and re-setting srcObject restarts playback → flicker.
+                      if (ref && video.stream && ref.srcObject !== video.stream) {
+                        ref.srcObject = video.stream;
+                      }
+                    }}
+                    autoPlay
+                  ></video>
+                  <h2>
+                    <span className="dot" />
+                    {name}
+                    {video.socketId === roomMeta.host && (
+                      <span className="tileHost">Host</span>
+                    )}
+                  </h2>
+                  <div className="tileBadges">
+                    {roomMeta.hands[video.socketId] && (
+                      <span className="tileBadge hand">✋</span>
+                    )}
+                    {media && !media.audio && (
+                      <span className="tileBadge muted">
+                        <span className="material-symbols-outlined">mic_off</span>
+                      </span>
+                    )}
+                    {media && !media.video && (
+                      <span className="tileBadge muted">
+                        <span className="material-symbols-outlined">
+                          videocam_off
+                        </span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           <video
@@ -743,6 +1100,59 @@ export default function VideoMeet() {
             </button>
 
             <button
+              className={`controlButton ${handRaised ? "active" : ""}`}
+              onClick={toggleHand}
+              title={handRaised ? "Lower hand" : "Raise hand"}
+            >
+              <span className="material-symbols-outlined">front_hand</span>
+            </button>
+
+            <div className="reactionsAnchor">
+              {showReactions && (
+                <div className="reactionsPopover">
+                  {REACTION_EMOJIS.map((e) => (
+                    <button
+                      key={e}
+                      className="reactionChoice"
+                      onClick={() => sendReaction(e)}
+                    >
+                      {e}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <button
+                className={`controlButton ${showReactions ? "active" : ""}`}
+                onClick={() => setShowReactions((v) => !v)}
+                title="Reactions"
+              >
+                <span className="material-symbols-outlined">add_reaction</span>
+              </button>
+            </div>
+
+            <button
+              className={`controlButton ${showParticipants ? "active" : ""}`}
+              onClick={() => setShowParticipants((v) => !v)}
+              title="Participants"
+            >
+              <span className="material-symbols-outlined">group</span>
+              {(Object.keys(roomMeta.names).length > 1 ||
+                pendingRequests.length > 0) && (
+                <span className={`chatBadge ${pendingRequests.length ? "" : "neutral"}`}>
+                  {pendingRequests.length || Object.keys(roomMeta.names).length}
+                </span>
+              )}
+            </button>
+
+            <button
+              className="controlButton"
+              onClick={() => setShowInvite(true)}
+              title="Invite people"
+            >
+              <span className="material-symbols-outlined">person_add</span>
+            </button>
+
+            <button
               className={`controlButton ${showModal ? "active" : ""}`}
               onClick={() => (showModal ? closeChat() : openChat())}
               title="Chat"
@@ -766,6 +1176,24 @@ export default function VideoMeet() {
             socket={socketRef.current}
             open={showTranscript}
             onClose={() => setShowTranscript(false)}
+          />
+
+          <ParticipantsPanel
+            open={showParticipants}
+            onClose={() => setShowParticipants(false)}
+            selfId={selfId}
+            meta={roomMeta}
+            pending={pendingRequests}
+            isHost={isHost}
+            onAdmit={admitUser}
+            onDeny={denyUser}
+          />
+
+          <InviteModal
+            open={showInvite}
+            onClose={() => setShowInvite(false)}
+            roomCode={url || ""}
+            meetingName={meetingName}
           />
 
           {showModal && (
