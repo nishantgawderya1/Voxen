@@ -76,26 +76,34 @@ const Pricing = () => {
               data-reveal-delay={i * 90}
               className={`reveal relative flex flex-col rounded-card p-7 ${
                 t.highlight
-                  ? "border border-primary/40 bg-surface"
-                  : "card"
+                  ? "gradient-border shadow-soft"
+                  : "card card-hover spotlight-card"
               }`}
             >
               {t.highlight && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-[10px] font-medium uppercase tracking-widest text-primary-fg">
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 overflow-hidden rounded-card"
+                >
+                  <div className="absolute -top-20 left-1/2 h-48 w-72 -translate-x-1/2 rounded-full bg-primary/25 blur-3xl" />
+                </div>
+              )}
+              {t.highlight && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-primary to-accent px-3 py-1 text-[10px] font-medium uppercase tracking-widest text-primary-fg shadow-[0_8px_20px_-8px_rgb(var(--c-primary)/0.7)]">
                   Most popular
                 </span>
               )}
-              <div className="mb-6">
+              <div className="relative mb-6">
                 <h3 className={`text-lg font-medium ${t.highlight ? "text-primary" : "text-text"}`}>
                   {t.name}
                 </h3>
                 <p className="mt-1 text-sm text-muted">{t.tagline}</p>
               </div>
-              <div className="mb-6 flex items-end gap-1">
+              <div className="relative mb-6 flex items-end gap-1">
                 <span className="font-display text-5xl font-medium text-text">{t.price}</span>
                 <span className="mb-1.5 text-sm text-muted">{t.period}</span>
               </div>
-              <ul className="mb-8 flex-grow space-y-3">
+              <ul className="relative mb-8 flex-grow space-y-3">
                 {t.features.map((f) => (
                   <li key={f} className="flex items-center gap-3 text-sm text-muted">
                     <span className={`grid h-5 w-5 place-items-center rounded-full ${t.highlight ? "bg-primary/15 text-primary" : "bg-line/8 text-mint"}`}>
@@ -128,14 +136,16 @@ const Pricing = () => {
               <figure
                 key={t.name}
                 data-reveal-delay={i * 80}
-                className="reveal card card-hover flex flex-col gap-6 p-7"
+                className="reveal card card-hover spotlight-card flex flex-col gap-6 p-7"
               >
                 <blockquote className="text-[15px] leading-relaxed text-text">
                   “{t.quote}”
                 </blockquote>
                 <figcaption className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-primary/70 to-accent/50 text-sm font-medium text-primary-fg">
-                    {t.name.split(" ").map((n) => n[0]).join("")}
+                  <div className="shrink-0 rounded-full bg-gradient-to-br from-primary to-accent p-[1.5px]">
+                    <div className="grid h-10 w-10 place-items-center rounded-full bg-surface2 text-sm font-medium text-text">
+                      {t.name.split(" ").map((n) => n[0]).join("")}
+                    </div>
                   </div>
                   <div>
                     <div className="text-sm font-medium text-text">{t.name}</div>
@@ -149,10 +159,14 @@ const Pricing = () => {
 
         {/* CTA */}
         <div className="reveal mt-28">
-          <div className="relative overflow-hidden rounded-xl border border-line/[0.07] bg-surface p-10 text-center sm:p-16">
+          <div className="glass relative overflow-hidden rounded-[24px] p-10 text-center sm:p-16">
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+              <div className="grid-bg mask-fade-b absolute inset-0" />
+              <div className="absolute -top-32 left-1/2 h-72 w-[40rem] -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
+            </div>
             <div className="relative">
-              <h2 className="font-display text-3xl font-medium tracking-tight text-text sm:text-[44px]">
-                Start talking without borders
+              <h2 className="font-display text-3xl font-semibold tracking-tight text-text sm:text-[44px]">
+                Start talking <span className="text-gradient">without borders</span>
               </h2>
               <p className="mx-auto mt-4 max-w-lg text-muted">
                 Join thousands of professionals communicating better every day. No

@@ -11,8 +11,22 @@ const groups = [
 
 export default function Footer() {
   return (
-    <footer className="relative border-t border-line/10 bg-surface/40 py-16">
-      <div className="container-base">
+    <footer className="relative overflow-hidden bg-surface/40 py-16">
+      {/* Gradient hairline top edge */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
+      />
+      {/* Giant faded background wordmark */}
+      <img
+        src="/brand-wordmark.png"
+        alt=""
+        aria-hidden="true"
+        className="brand-logo pointer-events-none absolute -bottom-4 left-1/2 w-[120%] max-w-none -translate-x-1/2 select-none opacity-[0.04] sm:w-[90%]"
+        draggable="false"
+      />
+
+      <div className="container-base relative">
         <div className="grid grid-cols-2 gap-10 md:grid-cols-5">
           <div className="col-span-2 space-y-4">
             <Brand />
@@ -21,7 +35,7 @@ export default function Footer() {
               Speak your language — be understood in theirs.
             </p>
             <div className="flex items-center gap-2 text-xs text-muted">
-              <span className="h-2 w-2 rounded-full bg-mint" />
+              <span className="h-2 w-2 animate-pulse rounded-full bg-mint shadow-[0_0_10px] shadow-mint/60" />
               All systems operational · 99.9% uptime
             </div>
           </div>
@@ -33,7 +47,10 @@ export default function Footer() {
               <ul className="space-y-2.5 text-sm text-muted">
                 {g.items.map((i) => (
                   <li key={i}>
-                    <a className="transition-colors hover:text-primary" href="#">
+                    <a
+                      className="inline-block transition-[transform,color] duration-200 hover:translate-x-0.5 hover:text-primary"
+                      href="#"
+                    >
                       {i}
                     </a>
                   </li>

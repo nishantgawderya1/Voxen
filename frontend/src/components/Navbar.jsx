@@ -38,9 +38,13 @@ export default function Navbar() {
               <a
                 key={l.label}
                 href={l.href}
-                className="rounded-lg px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-line/[0.06] hover:text-text"
+                className="group relative rounded-lg px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-line/[0.06] hover:text-text"
               >
                 {l.label}
+                <span
+                  aria-hidden="true"
+                  className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-gradient-to-r from-primary to-accent opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                />
               </a>
             ))}
           </nav>
@@ -70,13 +74,17 @@ export default function Navbar() {
         </div>
 
         {open && (
-          <div className="glass mt-2 flex flex-col gap-1 rounded-2xl p-3 md:hidden">
+          <div className="glass relative mt-2 flex flex-col gap-1 overflow-hidden rounded-2xl p-3 md:hidden">
+            <span
+              aria-hidden="true"
+              className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
+            />
             {links.map((l) => (
               <a
                 key={l.label}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted hover:bg-line/[0.06] hover:text-text"
+                className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-line/[0.06] hover:text-text"
               >
                 {l.label}
               </a>
