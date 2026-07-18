@@ -1,0 +1,12 @@
+# Voxen — crawler policy
+# Marketing pages are indexable; authenticated app and live meeting
+# rooms carry no public content and should stay out of the index.
+
+User-agent: *
+Allow: /$
+Allow: /auth
+Disallow: /home
+Disallow: /history
+Disallow: /meet
+
+Sitemap: https://voxen.app/sitemap.xml

@@ -5,11 +5,90 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- ============ SEO ============
+         NOTE: replace https://voxen.app with the real production domain
+         everywhere below (canonical, og:url, og:image, twitter:image,
+         JSON-LD) before going live — a wrong canonical hurts ranking. -->
+    <title>Voxen — Real-Time AI Video Calls with Live Translation</title>
     <meta
       name="description"
-      content="Voxen — real-time AI translation, transcription and insight for every video call. Speak your language, be understood in theirs."
+      content="Voxen is an AI video calling app that translates speech live in 50+ languages, transcribes every meeting and delivers instant summaries. Free to start — no downloads."
     />
-    <title>Voxen · Real-time AI Video Calls</title>
+    <meta
+      name="keywords"
+      content="Voxen, AI video calls, real-time translation, live transcription, video conferencing, meeting summaries, multilingual meetings, video chat app"
+    />
+    <meta name="author" content="Voxen" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://voxen.app/" />
+    <meta name="theme-color" content="#07080e" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f6f6fc" media="(prefers-color-scheme: light)" />
+
+    <!-- Open Graph (Facebook, LinkedIn, WhatsApp, Slack…) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Voxen" />
+    <meta property="og:title" content="Voxen — Real-Time AI Video Calls with Live Translation" />
+    <meta
+      property="og:description"
+      content="Speak your language, be understood in theirs. Live translation in 50+ languages, transcripts and AI summaries in every call. Free to start."
+    />
+    <meta property="og:url" content="https://voxen.app/" />
+    <meta property="og:image" content="https://voxen.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Voxen — real-time AI video calls with live translation" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Voxen — Real-Time AI Video Calls with Live Translation" />
+    <meta
+      name="twitter:description"
+      content="Live translation in 50+ languages, transcripts and AI summaries in every video call. Free to start — no downloads."
+    />
+    <meta name="twitter:image" content="https://voxen.app/og-image.png" />
+    <meta name="twitter:image:alt" content="Voxen — real-time AI video calls" />
+
+    <!-- Structured data: app + organization (rich results, brand panel) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebApplication",
+            "@id": "https://voxen.app/#app",
+            "name": "Voxen",
+            "url": "https://voxen.app/",
+            "description": "AI video calling app with real-time speech translation in 50+ languages, live transcription and automatic meeting summaries.",
+            "applicationCategory": "CommunicationApplication",
+            "operatingSystem": "Web browser",
+            "browserRequirements": "Requires a modern browser with WebRTC",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD",
+              "description": "Free plan — 40-minute calls, up to 5 participants"
+            },
+            "featureList": [
+              "Real-time speech translation in 50+ languages",
+              "Live meeting transcription",
+              "AI meeting summaries",
+              "Waiting room and host controls",
+              "Screen sharing and in-call chat"
+            ],
+            "publisher": { "@id": "https://voxen.app/#org" }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://voxen.app/#org",
+            "name": "Voxen",
+            "url": "https://voxen.app/",
+            "logo": "https://voxen.app/favicon.png"
+          }
+        ]
+      }
+    </script>
 
     <!-- Apply saved theme before paint to avoid a flash -->
     <script>
