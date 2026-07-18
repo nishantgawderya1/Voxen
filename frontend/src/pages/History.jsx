@@ -6,10 +6,13 @@ import Brand from "../components/Brand.jsx";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 import Aurora from "../components/Aurora.jsx";
 import { Video, ArrowRight } from "../components/Icons.jsx";
+import { useSpotlight } from "../hooks/useInteractive.js";
 
 function HistoryComponent() {
   const router = useNavigate();
   const { getHistoryOfUser } = useContext(AuthContext);
+
+  useSpotlight();
 
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -77,13 +80,22 @@ function HistoryComponent() {
         {loading ? (
           <div className="flex flex-col gap-3">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="h-[74px] rounded-card border border-line/10 bg-surface/50" />
+              <div
+                key={i}
+                className="h-[74px] rounded-card border border-line/10 bg-gradient-to-r from-surface via-surface2 to-surface bg-[length:200%_100%] animate-shimmer"
+              />
             ))}
           </div>
         ) : !meetings || meetings.length === 0 ? (
           <div className="card flex flex-col items-center gap-4 py-20 text-center">
-            <span className="grid h-16 w-16 place-items-center rounded-2xl bg-primary/10 text-primary">
-              <span className="material-symbols-outlined text-3xl">history</span>
+            <span className="relative grid h-20 w-20 place-items-center">
+              <span
+                aria-hidden
+                className="ring-conic animate-spinSlower absolute inset-0 rounded-full"
+              />
+              <span className="grid h-14 w-14 place-items-center rounded-full bg-primary/10 text-primary">
+                <span className="material-symbols-outlined text-3xl">history</span>
+              </span>
             </span>
             <div>
               <p className="font-medium text-text">No meetings yet</p>
@@ -97,13 +109,16 @@ function HistoryComponent() {
           </div>
         ) : (
           <div className="flex flex-col gap-3">
-            {meetings.map((meeting) => (
+            {meetings.map((meeting, i) => (
               <div
                 key={meeting._id}
-                className="card card-hover flex items-center justify-between gap-4 p-4"
+                className="card card-hover spotlight-card flex items-center justify-between gap-4 p-4"
               >
-                <div className="flex min-w-0 items-center gap-4">
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/12 text-primary">
+                <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+                  <span className="w-6 shrink-0 text-center font-mono text-xs text-muted/60">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary/25 via-primary/10 to-accent/20 text-primary">
                     <Video size={20} />
                   </span>
                   <div className="min-w-0">

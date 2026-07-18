@@ -8,7 +8,15 @@ export default function Loader({ label = "Loading…", fullscreen = true }) {
       } z-50 flex animate-fadeUp flex-col items-center justify-center gap-6 bg-bg`}
     >
       <div className="relative grid h-16 w-16 place-items-center">
-        <div className="absolute inset-0 rounded-full border-[3px] border-primary/20 border-t-primary animate-spin" />
+        <div
+          aria-hidden
+          className="absolute -inset-4 rounded-full bg-primary/25 blur-2xl animate-breathe"
+        />
+        <div
+          aria-hidden
+          className="ring-conic animate-spinSlow absolute inset-0 rounded-full"
+          style={{ animationDuration: "1.6s" }}
+        />
         <img
           src="/mark.png"
           alt=""

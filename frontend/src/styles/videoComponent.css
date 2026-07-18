@@ -55,7 +55,7 @@
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
-  border-radius: 18px;
+  border-radius: 16px;
   border: 1px solid rgb(var(--c-line) / 0.1);
   background-color: rgb(var(--c-surface));
   box-shadow: 0 20px 50px -30px rgb(var(--c-shadow) / 0.6);
@@ -190,7 +190,7 @@
   width: 64px;
   background-color: rgb(var(--c-danger));
   border-color: transparent;
-  color: #fff;
+  color: rgb(var(--c-primary-fg));
 }
 
 .endCallButton:hover {
@@ -212,7 +212,7 @@
   padding: 0 5px;
   border-radius: 9999px;
   background: rgb(var(--c-danger));
-  color: #fff;
+  color: rgb(var(--c-primary-fg));
   font-size: 11px;
   font-weight: 600;
   display: flex;
@@ -957,7 +957,7 @@
 
   .conferenceView > div video {
     aspect-ratio: 4 / 3;
-    border-radius: 14px;
+    border-radius: 12px;
   }
 
   .conferenceView > div h2 {
@@ -1061,5 +1061,126 @@
   }
   .buttonContainers {
     bottom: 12px;
+  }
+}
+
+/* ================================================================== */
+/*  Dimensional Signal — additive polish layer (vx-)                   */
+/*  Everything below augments earlier rules; nothing is removed.       */
+/* ================================================================== */
+
+/* Control dock — richer glass: top-lit gradient sheen, inset          */
+/* highlight, deeper layered shadow.                                   */
+.buttonContainers {
+  background:
+    linear-gradient(
+      180deg,
+      rgb(var(--c-text) / 0.05),
+      rgb(var(--c-text) / 0) 55%
+    ),
+    var(--glass);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    inset 0 -1px 0 rgb(var(--c-shadow) / 0.12),
+    0 28px 70px -28px rgb(var(--c-shadow) / 0.7),
+    0 8px 22px -12px rgb(var(--c-shadow) / 0.4);
+}
+
+/* Keyboard focus ring for dock controls and lobby toggles. */
+.controlButton:focus-visible,
+.preJoinToggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(var(--c-primary) / 0.25);
+}
+
+/* Participant tiles — gentle lift on hover. */
+.conferenceView > div video {
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s ease;
+}
+.conferenceView > div:hover video {
+  transform: scale(1.01);
+  box-shadow: 0 26px 60px -28px rgb(var(--c-shadow) / 0.7);
+}
+
+/* Meeting info bar — inset top highlight + gradient hairline underline. */
+.meetInfoBar {
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    0 14px 36px -18px rgb(var(--c-shadow) / 0.55);
+}
+.meetInfoBar::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--c-primary) / 0.35) 50%,
+    transparent
+  );
+}
+
+/* Panel headers (chat / transcript / participants all share            */
+/* .chatHeader) — gradient hairline over the divider.                   */
+.chatHeader {
+  position: relative;
+}
+.chatHeader::after {
+  content: "";
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: -1px;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--c-primary) / 0.35),
+    rgb(var(--c-accent) / 0.2) 55%,
+    transparent
+  );
+}
+
+/* Waiting-room tile — conic-tinted glass with a soft breathing pulse. */
+.waitingPulse {
+  position: relative;
+  background:
+    radial-gradient(
+      120% 120% at 50% 0%,
+      rgb(var(--c-primary) / 0.2),
+      transparent 65%
+    ),
+    conic-gradient(
+      from 220deg,
+      rgb(var(--c-primary) / 0.16),
+      rgb(var(--c-accent) / 0.1),
+      rgb(var(--c-mint) / 0.08),
+      rgb(var(--c-primary) / 0.16)
+    );
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    0 18px 44px -18px rgb(var(--c-primary) / 0.45);
+  animation: vx-breathe 3.4s ease-in-out infinite;
+}
+
+@keyframes vx-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      0 18px 44px -18px rgb(var(--c-primary) / 0.45);
+  }
+  50% {
+    transform: scale(1.045);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      0 22px 52px -18px rgb(var(--c-primary) / 0.6);
   }
 }

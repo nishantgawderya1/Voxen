@@ -772,7 +772,7 @@ export default function VideoMeet() {
   return (
     <div className="min-h-screen bg-bg text-text">
       {phase === "lobby" && (
-        <div className="relative flex min-h-screen flex-col">
+        <div className="relative flex min-h-screen flex-col overflow-hidden">
           <Aurora />
 
           {/* Lobby header */}
@@ -786,40 +786,51 @@ export default function VideoMeet() {
             <div className="grid w-full max-w-4xl items-center gap-8 lg:grid-cols-[1.15fr_1fr]">
               {/* Video preview */}
               <div className="order-2 lg:order-1">
-                <div className="relative overflow-hidden rounded-[24px] border border-line/10 bg-surface/70 backdrop-blur-xl">
-                  <video
-                    ref={localVideoRef}
-                    autoPlay
-                    muted
-                    className="aspect-video w-full object-cover"
-                  ></video>
-                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_100%_at_50%_0%,transparent_60%,rgb(var(--c-bg)/0.5))]" />
-                  <div className="absolute bottom-4 left-4 flex items-center gap-2">
-                    <span className="chip bg-bg/60">
-                      <span className="h-1.5 w-1.5 rounded-full bg-mint" />
-                      Camera preview
-                    </span>
+                <div className="relative">
+                  {/* Decorative conic arcs + soft under-glow */}
+                  <div
+                    className="pointer-events-none absolute inset-0 -z-10"
+                    aria-hidden="true"
+                  >
+                    <div className="ring-conic absolute -left-10 -top-12 h-44 w-44 animate-spinSlower rounded-full opacity-70" />
+                    <div className="ring-conic absolute -bottom-7 -right-5 h-24 w-24 animate-spinSlow rounded-full opacity-40" />
+                    <div className="absolute inset-x-10 -bottom-5 h-16 rounded-full bg-primary/30 blur-3xl" />
                   </div>
-                  {/* Pre-join device toggles */}
-                  <div className="absolute bottom-4 right-4 flex items-center gap-2">
-                    <button
-                      onClick={() => togglePreJoin("audio")}
-                      title={preJoinAudio ? "Join with mic off" : "Join with mic on"}
-                      className={`preJoinToggle ${preJoinAudio ? "" : "off"}`}
-                    >
-                      <span className="material-symbols-outlined">
-                        {preJoinAudio ? "mic" : "mic_off"}
+                  <div className="glass relative overflow-hidden rounded-[24px]">
+                    <video
+                      ref={localVideoRef}
+                      autoPlay
+                      muted
+                      className="aspect-video w-full object-cover"
+                    ></video>
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_100%_at_50%_0%,transparent_60%,rgb(var(--c-bg)/0.5))]" />
+                    <div className="absolute bottom-4 left-4 flex items-center gap-2">
+                      <span className="chip bg-bg/60">
+                        <span className="h-1.5 w-1.5 rounded-full bg-mint" />
+                        Camera preview
                       </span>
-                    </button>
-                    <button
-                      onClick={() => togglePreJoin("video")}
-                      title={preJoinVideo ? "Join with camera off" : "Join with camera on"}
-                      className={`preJoinToggle ${preJoinVideo ? "" : "off"}`}
-                    >
-                      <span className="material-symbols-outlined">
-                        {preJoinVideo ? "videocam" : "videocam_off"}
-                      </span>
-                    </button>
+                    </div>
+                    {/* Pre-join device toggles */}
+                    <div className="absolute bottom-4 right-4 flex items-center gap-2">
+                      <button
+                        onClick={() => togglePreJoin("audio")}
+                        title={preJoinAudio ? "Join with mic off" : "Join with mic on"}
+                        className={`preJoinToggle ${preJoinAudio ? "" : "off"}`}
+                      >
+                        <span className="material-symbols-outlined">
+                          {preJoinAudio ? "mic" : "mic_off"}
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => togglePreJoin("video")}
+                        title={preJoinVideo ? "Join with camera off" : "Join with camera on"}
+                        className={`preJoinToggle ${preJoinVideo ? "" : "off"}`}
+                      >
+                        <span className="material-symbols-outlined">
+                          {preJoinVideo ? "videocam" : "videocam_off"}
+                        </span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -855,9 +866,13 @@ export default function VideoMeet() {
                     Ask to join
                   </button>
                 </div>
-                <p className="mt-4 text-xs text-muted">
-                  Room code: <span className="font-mono text-text">{url}</span>
-                </p>
+                <div className="mt-5 flex flex-wrap items-center gap-2">
+                  <span className="text-xs text-muted">Room code</span>
+                  <span className="chip font-mono text-text">
+                    <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+                    {url}
+                  </span>
+                </div>
               </div>
             </div>
           </main>
@@ -865,17 +880,27 @@ export default function VideoMeet() {
       )}
 
       {phase === "waiting" && (
-        <div className="relative flex min-h-screen flex-col">
+        <div className="relative flex min-h-screen flex-col overflow-hidden">
           <Aurora />
           <header className="relative z-10 flex items-center justify-between p-6">
             <Brand to="/home" />
             <ThemeToggle />
           </header>
           <main className="relative z-10 flex flex-grow flex-col items-center justify-center gap-6 px-6 pb-16 text-center">
-            <div className="waitingPulse">
-              <span className="material-symbols-outlined text-[34px] text-primary">
-                meeting_room
-              </span>
+            <div className="relative grid h-28 w-28 place-items-center">
+              <span
+                className="pointer-events-none absolute inset-0 rounded-full bg-primary/15 blur-2xl"
+                aria-hidden="true"
+              />
+              <span
+                className="ring-conic pointer-events-none absolute inset-0 animate-spinSlow rounded-full"
+                aria-hidden="true"
+              />
+              <div className="waitingPulse">
+                <span className="material-symbols-outlined text-[34px] text-primary">
+                  meeting_room
+                </span>
+              </div>
             </div>
             <div>
               <h2 className="font-display text-2xl font-medium tracking-tight text-text sm:text-3xl">
@@ -900,15 +925,21 @@ export default function VideoMeet() {
       )}
 
       {phase === "denied" && (
-        <div className="relative flex min-h-screen flex-col">
+        <div className="relative flex min-h-screen flex-col overflow-hidden">
           <Aurora />
           <header className="relative z-10 flex items-center justify-between p-6">
             <Brand to="/home" />
             <ThemeToggle />
           </header>
           <main className="relative z-10 flex flex-grow flex-col items-center justify-center gap-6 px-6 pb-16 text-center">
-            <span className="grid h-16 w-16 place-items-center rounded-2xl bg-danger/12 text-danger">
-              <span className="material-symbols-outlined text-[30px]">block</span>
+            <span className="glass relative grid h-16 w-16 place-items-center overflow-hidden rounded-2xl border-danger/30 text-danger">
+              <span
+                className="pointer-events-none absolute inset-0 bg-danger/15"
+                aria-hidden="true"
+              />
+              <span className="material-symbols-outlined relative text-[30px]">
+                block
+              </span>
             </span>
             <div>
               <h2 className="font-display text-2xl font-medium tracking-tight text-text sm:text-3xl">

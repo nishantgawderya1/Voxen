@@ -3,10 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext.jsx";
 import { isAuthenticated } from "../utils/auth.js";
 import { Snackbar } from "@mui/material";
-import Brand from "../components/Brand.jsx";
+import Brand, { BrandMark } from "../components/Brand.jsx";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 import Aurora from "../components/Aurora.jsx";
 import { Check } from "../components/Icons.jsx";
+import { useSpotlight } from "../hooks/useInteractive.js";
 
 const GoogleIcon = () => (
   <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -32,6 +33,9 @@ const perks = [
 const Authentication = () => {
   const { handleRegister, handleLogin } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  // Powers .spotlight-card — this page doesn't use MarketingLayout.
+  useSpotlight();
 
   // Already signed in? Skip the form entirely.
   useEffect(() => {
@@ -78,11 +82,57 @@ const Authentication = () => {
   return (
     <div className="relative min-h-screen lg:grid lg:grid-cols-2">
       <Aurora />
+      <div className="noise-overlay" aria-hidden />
 
       {/* Left — brand panel (desktop) */}
       <aside className="relative hidden flex-col justify-between overflow-hidden border-r border-line/10 bg-surface/40 p-12 backdrop-blur-xl lg:flex">
         <Brand />
         <div className="relative max-w-md">
+          {/* Floating 3D composition — decorative only */}
+          <div className="relative mx-auto mb-14 h-[300px] w-[300px]" aria-hidden>
+            {/* Soft glow behind the portal ring */}
+            <div className="absolute inset-10 rounded-full bg-primary/15 blur-3xl" />
+            {/* Conic portal ring */}
+            <div className="ring-conic absolute inset-0 animate-spinSlower rounded-full" />
+            {/* Brand mark, breathing at the center */}
+            <div className="absolute inset-0 grid place-items-center">
+              <BrandMark size={64} className="animate-breathe" />
+            </div>
+            {/* Orbiting translation chips */}
+            <div
+              className="absolute left-1/2 top-1/2 hidden animate-orbit lg:block"
+              style={{ "--orbit-r": "150px" }}
+            >
+              <span className="chip -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-[11px] shadow-lg">
+                EN → HI
+              </span>
+            </div>
+            <div
+              className="absolute left-1/2 top-1/2 hidden animate-orbit lg:block"
+              style={{ "--orbit-r": "150px", animationDelay: "-12s" }}
+            >
+              <span className="chip -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-[11px] shadow-lg">
+                JA → EN
+              </span>
+            </div>
+            {/* Floating live-caption mini-card */}
+            <div className="glass absolute -right-8 bottom-6 w-52 animate-float rounded-xl p-3">
+              <div className="flex items-center gap-1.5">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-pulseRing rounded-full bg-mint" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-mint" />
+                </span>
+                <span className="text-[10px] font-medium uppercase tracking-widest text-muted">
+                  Live caption
+                </span>
+              </div>
+              <p className="mt-1.5 text-xs leading-relaxed text-text">
+                “Bonjour à tous !” <span className="text-muted">→</span>{" "}
+                “Hello, everyone!”
+              </p>
+            </div>
+          </div>
+
           <h2 className="font-display text-4xl font-medium leading-tight tracking-tight text-text">
             Every conversation,
             <br />
@@ -91,7 +141,7 @@ const Authentication = () => {
           <ul className="mt-8 space-y-4">
             {perks.map((p) => (
               <li key={p} className="flex items-center gap-3 text-muted">
-                <span className="grid h-6 w-6 place-items-center rounded-full bg-mint/15 text-mint">
+                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-line/10 bg-gradient-to-br from-mint/25 via-primary/15 to-accent/20 text-mint shadow-sm">
                   <Check size={14} />
                 </span>
                 {p}
@@ -99,7 +149,7 @@ const Authentication = () => {
             ))}
           </ul>
         </div>
-        <div className="flex items-center gap-3 rounded-2xl border border-line/10 bg-surface/60 p-4">
+        <div className="glass flex items-center gap-3 rounded-2xl p-4">
           <div className="flex -space-x-2">
             {["A", "K", "S"].map((c, i) => (
               <span
@@ -145,7 +195,7 @@ const Authentication = () => {
               </p>
             </div>
 
-            <div className="card p-6 sm:p-7">
+            <div className="glass spotlight-card rounded-2xl p-6 sm:p-7">
               {/* OAuth */}
               <div className="grid gap-2.5">
                 <button type="button" className="btn-ghost w-full py-2.5 text-sm">
@@ -157,11 +207,11 @@ const Authentication = () => {
               </div>
 
               <div className="my-5 flex items-center gap-3">
-                <div className="h-px flex-grow bg-line/10" />
+                <div className="h-px flex-grow bg-gradient-to-r from-transparent via-line/25 to-primary/50" />
                 <span className="text-xs font-medium uppercase tracking-widest text-muted">
                   or
                 </span>
-                <div className="h-px flex-grow bg-line/10" />
+                <div className="h-px flex-grow bg-gradient-to-l from-transparent via-line/25 to-accent/50" />
               </div>
 
               <form className="flex flex-col gap-4" onSubmit={onSubmit}>

@@ -38,22 +38,17 @@ export default function TranscriptSidebar({ socket, open, onClose }) {
       </div>
       <div className="chattingDisplay">
         {lines.length === 0 ? (
-          <div className="chatEmpty" style={{ color: "#545868" }}>
-            Transcript will appear here
-          </div>
+          <div className="chatEmpty">Transcript will appear here</div>
         ) : (
           lines.map((line, i) => (
-            <div key={i} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <div style={{ display: "flex", gap: 8, alignItems: "baseline" }}>
-                <span style={{ color: "#7c5cff", fontSize: 12, fontWeight: 500 }}>
+            <div key={i} className="flex flex-col gap-0.5">
+              <div className="flex items-baseline gap-2">
+                <span className="text-xs font-medium text-primary">
                   {(line.speaker || "").slice(0, 6)}
                 </span>
-                <span style={{ color: "#545868", fontSize: 11 }}>{line.time}</span>
+                <span className="text-[11px] text-muted/70">{line.time}</span>
               </div>
-              <p
-                style={{ color: "#8b8fa8", fontSize: 13, margin: 0 }}
-                className="leading-relaxed"
-              >
+              <p className="m-0 text-[13px] leading-relaxed text-muted">
                 {line.text}
               </p>
             </div>
