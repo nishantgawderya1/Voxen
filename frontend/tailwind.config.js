@@ -84,6 +84,19 @@ export default {
           "0%": { transform: "rotate(0deg)" },
           "100%": { transform: "rotate(360deg)" },
         },
+        gradientPan: {
+          "0%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+          "100%": { backgroundPosition: "0% 50%" },
+        },
+        orbit: {
+          "0%": { transform: "rotate(0deg) translateX(var(--orbit-r, 150px)) rotate(0deg)" },
+          "100%": { transform: "rotate(360deg) translateX(var(--orbit-r, 150px)) rotate(-360deg)" },
+        },
+        breathe: {
+          "0%,100%": { opacity: "0.55", transform: "scale(1)" },
+          "50%": { opacity: "1", transform: "scale(1.06)" },
+        },
       },
       animation: {
         fadeUp: "fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) forwards",
@@ -92,7 +105,12 @@ export default {
         shimmer: "shimmer 2.4s linear infinite",
         pulseRing: "pulseRing 2s ease-out infinite",
         marquee: "marquee 28s linear infinite",
+        marqueeSlow: "marquee 44s linear infinite",
         spinSlow: "spinSlow 18s linear infinite",
+        spinSlower: "spinSlow 40s linear infinite",
+        gradientPan: "gradientPan 8s ease infinite",
+        orbit: "orbit 24s linear infinite",
+        breathe: "breathe 5s ease-in-out infinite",
       },
     },
   },
