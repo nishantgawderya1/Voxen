@@ -59,9 +59,13 @@ function HistoryComponent() {
             <Brand to="/home" />
             <div className="flex items-center gap-2">
               <ThemeToggle />
-              <button onClick={() => router("/home")} className="btn-ghost px-4 py-2 text-sm">
+              <button
+                onClick={() => router("/home")}
+                title="Back to home"
+                className="btn-ghost px-3 py-2 text-sm sm:px-4"
+              >
                 <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-                Home
+                <span className="hidden sm:inline">Home</span>
               </button>
             </div>
           </div>

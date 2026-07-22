@@ -69,17 +69,17 @@ const LandingPage = () => {
     <section className="relative overflow-hidden pt-32 sm:pt-40">
       <div className="container-base">
         <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_1fr]">
-          {/* Copy */}
-          <div className="flex flex-col items-start text-left">
+          {/* Copy — min-w-0 stops the marquee's w-max track from inflating
+              the grid column past the viewport on phones */}
+          <div className="flex min-w-0 flex-col items-start text-left">
             <span className="reveal chip mb-5">
               <span className="h-1.5 w-1.5 rounded-full bg-mint" />
               The AI layer for real-time conversation
             </span>
 
-            <h1 className="reveal font-display text-[42px] font-semibold leading-[1.05] tracking-tight text-text sm:text-[58px]">
+            <h1 className="reveal font-display text-[34px] font-semibold leading-[1.08] tracking-tight text-text min-[400px]:text-[38px] sm:text-[48px] sm:leading-[1.05] lg:text-[58px]">
               Break every language
-              <br />
-              barrier{" "}
+              <br className="hidden sm:block" /> barrier{" "}
               <span className="text-gradient">in real time.</span>
             </h1>
 
@@ -106,7 +106,7 @@ const LandingPage = () => {
           </div>
 
           {/* Visual */}
-          <div className="reveal" data-reveal-delay="120">
+          <div className="reveal min-w-0" data-reveal-delay="120">
             <HeroVisual />
           </div>
         </div>

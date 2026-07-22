@@ -67,10 +67,11 @@ function HomeComponent() {
               <ThemeToggle />
               <button
                 onClick={handleLogout}
-                className="btn-ghost px-4 py-2 text-sm"
+                title="Logout"
+                className="btn-ghost px-3 py-2 text-sm sm:px-4"
               >
                 <span className="material-symbols-outlined text-[18px]">logout</span>
-                Logout
+                <span className="hidden sm:inline">Logout</span>
               </button>
             </div>
           </div>
