@@ -1,13 +1,13 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Voxen backend — REST API, WebRTC signalling and live transcription",
+  "main": "src/app.js",
   "scripts": {
     "dev": "nodemon src/app.js",
     "start": "node src/app.js",
     "prod": "NODE_ENV=production node src/app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "MONGO_URI=mongodb://127.0.0.1:27017/voxen-test JWT_SECRET=test-secret node --test test/*.test.js"
   },
   "keywords": [],
   "author": "",
@@ -29,6 +29,7 @@
     "socket.io": "^4.8.3"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "socket.io-client": "^4.8.3"
   }
 }
