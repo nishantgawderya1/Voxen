@@ -7,13 +7,15 @@
     "dev": "nodemon src/app.js",
     "start": "node src/app.js",
     "prod": "NODE_ENV=production node src/app.js",
-    "test": "MONGO_URI=mongodb://127.0.0.1:27017/voxen-test JWT_SECRET=test-secret node --test test/*.test.js"
+    "test": "MONGO_URI=mongodb://127.0.0.1:27017/voxen-test JWT_SECRET=test-secret node --test test/*.test.js",
+    "test:watch": "MONGO_URI=mongodb://127.0.0.1:27017/voxen-test JWT_SECRET=test-secret node --test --watch test/*.test.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@socket.io/redis-adapter": "^8.3.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
@@ -26,6 +28,7 @@
     "mongoose": "^9.7.2",
     "morgan": "^1.11.0",
     "multer": "^2.2.0",
+    "redis": "^6.2.1",
     "socket.io": "^4.8.3"
   },
   "devDependencies": {

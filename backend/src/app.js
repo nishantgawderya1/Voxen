@@ -4,6 +4,7 @@ import helmet from "helmet";
 import cors from "cors";
 import config from "./config/env.js";
 import connectToSocket from "./controllers/socketManager.js";
+import createRoomState from "./state/index.js";
 import userRoutes from "./routes/userRoutes.js";
 import transcribeRoute from "./routes/transcribe.js";
 
@@ -66,7 +67,9 @@ app.use((err, req, res, _next) => {
 const server = app.listen(config.port, () =>
   console.log(`Listening on ${config.port}`)
 );
-const io = connectToSocket(server);
+
+const { store, adapter, close: closeRoomState } = await createRoomState();
+const io = connectToSocket(server, { store, adapter });
 
 mongoose
   .connect(config.mongoUri)
@@ -89,6 +92,10 @@ const shutdown = async (signal) => {
   try {
     io.close();
     await new Promise((resolve) => server.close(resolve));
+    // Closing sockets fires disconnect handlers, which still read and write
+    // room state. Give them a moment to drain before the store goes away.
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await closeRoomState();
     await mongoose.connection.close(false);
     console.log("Shutdown complete");
     process.exit(0);

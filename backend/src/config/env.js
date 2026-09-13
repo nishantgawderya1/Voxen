@@ -46,6 +46,8 @@ const config = {
   // Empty in development means "reflect any origin"; production must be explicit.
   corsOrigins: list(process.env.CORS_ORIGINS),
   groqApiKey: process.env.GROQ_API_KEY || "",
+  // Unset means in-process room state, which caps the backend at one instance.
+  redisUrl: process.env.REDIS_URL || "",
   // Max audio bytes accepted per transcription chunk (default 8 MB).
   maxAudioBytes: Number(process.env.MAX_AUDIO_BYTES) || 8 * 1024 * 1024,
 };

@@ -36,10 +36,20 @@ elsewhere with `VITE_SERVER_URL`.
 cd backend && npm test
 ```
 
-Covers the input validators, the JWT auth middleware, and the socket room
-lifecycle — admission, host transfer, and the chat-isolation guarantee
-between meetings that reuse a room code. No database required; the socket
-tests run a real server on an ephemeral port.
+Covers the input validators, the JWT auth middleware, the socket room
+lifecycle (admission, host transfer, chat isolation between meetings that
+reuse a room code), and the room-store contract — run against both the
+in-memory and Redis implementations so they stay interchangeable.
+
+No database required; the socket tests run real servers on ephemeral ports.
+Set `REDIS_URL` to also run the Redis contract and the multi-instance suite,
+which boots two backends sharing one Redis and connects a client to each:
+
+```bash
+REDIS_URL=redis://127.0.0.1:6379 npm test
+```
+
+Without it those tests skip rather than fail.
 
 ## Configuration
 
@@ -52,6 +62,7 @@ Every variable is documented in `backend/.env.example` and
 | `JWT_SECRET` | backend | **Required in production.** Outside production a random one is generated per boot, which invalidates sessions on every restart. |
 | `CORS_ORIGINS` | backend | **Required in production.** Comma-separated browser origins, no trailing slash. Applies to both the REST API and Socket.IO. |
 | `GROQ_API_KEY` | backend | Transcription returns 503 until set. |
+| `REDIS_URL` | backend | Share room state across instances. Unset = in-process, single instance only. |
 | `VITE_SERVER_URL` | frontend | Backend origin for the built bundle. |
 | `VITE_TURN_URLS` | frontend | TURN relay — see below. |
 
@@ -89,9 +100,10 @@ meeting (`/abc?name=Standup`) and a bare link (`/abc`) are the same room.
 
 ## Known limitations
 
-- **Room state is in-process.** `connection`, `rooms` and `messages` live in
-  the Node process, so the backend cannot be scaled beyond a single instance
-  without moving that state to Redis (and adding the Socket.IO Redis adapter).
+- **Scaling past one instance requires `REDIS_URL`.** Without it room state is
+  in-process and two instances would each see half of every meeting. With it,
+  state is shared and the Socket.IO Redis adapter routes events across
+  instances. The server warns at boot if it starts in production without it.
 - **Chat and transcripts are not end-to-end encrypted.** Media is; anything
   relayed through the server is readable by the server.
 - **Media is a full mesh.** Every participant sends their stream to every

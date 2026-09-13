@@ -1,54 +1,11 @@
 import { Server } from "socket.io";
 import config from "../config/env.js";
+import { createMemoryStore } from "../state/memoryStore.js";
 
-// connection[path] stays the plain array of admitted socket ids so the
-// existing chat/signal loops keep working untouched.
-let connection = {};
-let timeOnline = {};
-let messages = {};
-
-// Per-room meeting metadata layered on top of `connection`.
-// rooms[path] = {
-//   host: socketId,
-//   names: { socketId: username },
-//   media: { socketId: { audio, video } },
-//   hands: { socketId: true },
-//   pending: { socketId: username },   // knocking, not yet admitted
-// }
-let rooms = {};
-
-const roomMeta = (path) => {
-  if (!rooms[path]) {
-    rooms[path] = { host: null, names: {}, media: {}, hands: {}, pending: {} };
-  }
-  return rooms[path];
-};
-
-const publicMeta = (path) => {
-  const m = roomMeta(path);
-  return { host: m.host, names: m.names, media: m.media, hands: m.hands };
-};
-
-const findRoomOf = (socketId) => {
-  for (const [path, ids] of Object.entries(connection)) {
-    if (ids.includes(socketId)) return path;
-  }
-  return null;
-};
-
-// Cap replayed history so a long-running room can't grow without bound.
-const MAX_ROOM_MESSAGES = 200;
-
-// Every per-room map has to be torn down together. Leaving `messages[path]`
-// behind when the room emptied meant the next meeting to reuse that code was
-// served the previous meeting's chat on join.
-const disposeRoom = (path) => {
-  delete connection[path];
-  delete rooms[path];
-  delete messages[path];
-};
-
-const connectToSocket = (server) => {
+// Room state lives behind a store so the process isn't the only place it can
+// live. `createMemoryStore` is the single-instance default; pass a Redis-backed
+// store (see state/redisStore.js) to run more than one backend instance.
+const connectToSocket = (server, { store = createMemoryStore(), adapter } = {}) => {
   const io = new Server(server, {
     cors: {
       // Same allowlist as the REST layer — `origin: "*"` with credentials let
@@ -67,230 +24,256 @@ const connectToSocket = (server) => {
     },
   });
 
+  // With the Redis adapter, `io.to(room).emit` reaches sockets held by other
+  // instances; without it a room is only ever one process wide.
+  if (adapter) io.adapter(adapter);
+
+  const publicMeta = async (path) => {
+    const { host, names, media, hands } = await store.getMeta(path);
+    return { host, names, media, hands };
+  };
+
+  // Which room a socket belongs to. The store is the only source of truth:
+  // a socket admitted by a host on another instance never touches this
+  // process's socket.data, so local state would be blank for it.
+  const pathOf = (socket) => store.roomOf(socket.id);
+
   // Fully admit a socket into a room: bookkeeping + RTC kick-off broadcast.
-  const admitSocket = (socket, path, username) => {
-    const meta = roomMeta(path);
+  // Takes an id, not a socket object, because the socket being admitted is
+  // frequently held by a different instance than the host doing the admitting.
+  const admitSocket = async (socketId, path, username) => {
+    await store.addMember(path, socketId, username);
 
-    if (connection[path] === undefined) {
-      connection[path] = [];
+    // socketsJoin routes through the adapter, so it works regardless of which
+    // instance holds the socket. socket.join() would only work locally.
+    await io.in(socketId).socketsJoin(path);
+
+    const members = await store.getMembers(path);
+    const meta = await publicMeta(path);
+
+    // Addressed per-socket rather than to the room, because each recipient
+    // needs to know which id just joined.
+    for (const id of members) {
+      io.to(id).emit("user-joined", socketId, members, meta);
     }
-    connection[path].push(socket.id);
-    socket.join(path);
-    socket.data.path = path;
 
-    meta.names[socket.id] = username || "Guest";
-    meta.media[socket.id] = { audio: true, video: true };
-    if (!meta.host) meta.host = socket.id;
-
-    timeOnline[socket.id] = new Date();
-
-    // Same broadcast shape as before, plus a meta payload (names/host/…).
-    for (let a = 0; a < connection[path].length; a++) {
-      io.to(connection[path][a]).emit(
-        "user-joined",
-        socket.id,
-        connection[path],
-        publicMeta(path)
+    for (const message of await store.getMessages(path)) {
+      io.to(socketId).emit(
+        "chat-message",
+        message["data"],
+        message["sender"],
+        message["socket-id-sender"]
       );
     }
 
-    if (messages[path] !== undefined) {
-      for (let a = 0; a < messages[path].length; ++a) {
-        io.to(socket.id).emit(
-          "chat-message",
-          messages[path][a]["data"],
-          messages[path][a]["sender"],
-          messages[path][a]["socket-id-sender"]
-        );
-      }
-    }
+    await store.touch(path);
   };
 
   io.on("connection", (socket) => {
-    socket.on("join-call", (path, username) => {
-      const meta = roomMeta(path);
-      const occupied = connection[path] && connection[path].length > 0;
+    const safely = (handler) => (...args) =>
+      Promise.resolve(handler(...args)).catch((e) =>
+        // An unhandled rejection in a socket handler would take the process
+        // down and every call with it.
+        console.error("[socket]", socket.id, e)
+      );
 
-      if (!occupied) {
-        // First one in — becomes host, joins straight away.
-        admitSocket(socket, path, username);
-        io.to(socket.id).emit("admitted", publicMeta(path));
-        return;
-      }
+    socket.on(
+      "join-call",
+      safely(async (path, username) => {
+        if (typeof path !== "string" || !path) return;
 
-      // Room occupied — knock and wait for the host.
-      meta.pending[socket.id] = username || "Guest";
-      socket.data.knockPath = path;
-      io.to(socket.id).emit("waiting-room");
-      if (meta.host) {
-        io.to(meta.host).emit("join-request", socket.id, username || "Guest");
-      }
-    });
+        const occupied = (await store.getMembers(path)).length > 0;
 
-    socket.on("admit-user", (id) => {
-      const path = socket.data.path;
-      if (!path) return;
-      const meta = roomMeta(path);
-      if (socket.id !== meta.host) return; // host-only
-      const username = meta.pending[id];
-      if (username === undefined) return;
+        if (!occupied) {
+          // First one in — becomes host, joins straight away.
+          await admitSocket(socket.id, path, username);
+          io.to(socket.id).emit("admitted", await publicMeta(path));
+          return;
+        }
 
-      delete meta.pending[id];
-      const target = io.sockets.sockets.get(id);
-      if (!target) return;
-      delete target.data.knockPath;
+        // Room occupied — knock and wait for the host.
+        await store.addPending(path, socket.id, username);
+        socket.data.knockPath = path;
+        io.to(socket.id).emit("waiting-room");
 
-      admitSocket(target, path, username);
-      io.to(id).emit("admitted", publicMeta(path));
-    });
+        const host = await store.getHost(path);
+        if (host) {
+          io.to(host).emit("join-request", socket.id, username || "Guest");
+        }
+      })
+    );
 
-    socket.on("deny-user", (id) => {
-      const path = socket.data.path;
-      if (!path) return;
-      const meta = roomMeta(path);
-      if (socket.id !== meta.host) return;
-      if (meta.pending[id] === undefined) return;
+    socket.on(
+      "admit-user",
+      safely(async (id) => {
+        const path = await pathOf(socket);
+        if (!path) return;
+        if (socket.id !== (await store.getHost(path))) return; // host-only
 
-      delete meta.pending[id];
-      const target = io.sockets.sockets.get(id);
-      if (target) delete target.data.knockPath;
-      io.to(id).emit("join-denied");
-    });
+        // Clearing the pending entry is what makes this idempotent — a second
+        // admit, or the knocker's own disconnect, finds nothing to do.
+        const username = await store.removePending(path, id);
+        if (username === null) return;
 
-    socket.on("media-state", ({ audio, video }) => {
-      const path = socket.data.path;
-      if (!path) return;
-      const meta = roomMeta(path);
-      meta.media[socket.id] = { audio: !!audio, video: !!video };
-      io.to(path).emit("media-state", socket.id, meta.media[socket.id]);
-    });
+        await admitSocket(id, path, username);
+        io.to(id).emit("admitted", await publicMeta(path));
+      })
+    );
 
-    socket.on("raise-hand", (raised) => {
-      const path = socket.data.path;
-      if (!path) return;
-      const meta = roomMeta(path);
-      if (raised) meta.hands[socket.id] = true;
-      else delete meta.hands[socket.id];
-      io.to(path).emit("raise-hand", socket.id, !!raised);
-    });
+    socket.on(
+      "deny-user",
+      safely(async (id) => {
+        const path = await pathOf(socket);
+        if (!path) return;
+        if (socket.id !== (await store.getHost(path))) return;
 
-    socket.on("reaction", (emoji) => {
-      const path = socket.data.path;
-      if (!path) return;
-      const meta = roomMeta(path);
-      const safe = String(emoji).slice(0, 8);
-      io.to(path).emit("reaction", socket.id, safe, meta.names[socket.id] || "Guest");
-    });
+        const username = await store.removePending(path, id);
+        if (username === null) return;
+
+        io.to(id).emit("join-denied");
+      })
+    );
+
+    socket.on(
+      "media-state",
+      safely(async ({ audio, video } = {}) => {
+        const path = await pathOf(socket);
+        if (!path) return;
+        const next = await store.setMedia(path, socket.id, { audio, video });
+        io.to(path).emit("media-state", socket.id, next);
+      })
+    );
+
+    socket.on(
+      "raise-hand",
+      safely(async (raised) => {
+        const path = await pathOf(socket);
+        if (!path) return;
+        await store.setHand(path, socket.id, !!raised);
+        io.to(path).emit("raise-hand", socket.id, !!raised);
+      })
+    );
+
+    socket.on(
+      "reaction",
+      safely(async (emoji) => {
+        const path = await pathOf(socket);
+        if (!path) return;
+        const safe = String(emoji).slice(0, 8);
+        const name = (await store.getName(path, socket.id)) || "Guest";
+        io.to(path).emit("reaction", socket.id, safe, name);
+      })
+    );
 
     socket.on("signal", (toId, message) => {
       io.to(toId).emit("signal", socket.id, message);
     });
 
-    socket.on("transcript-update", ({ roomId, text, speaker, timestamp }) => {
+    socket.on("transcript-update", ({ roomId, text, speaker, timestamp } = {}) => {
+      if (!roomId) return;
       socket.to(roomId).emit("transcript-update", { text, speaker, timestamp });
       socket.emit("transcript-update", { text, speaker, timestamp });
     });
 
-    socket.on("chat-message", (data, sender) => {
-      const [matchingRoom, found] = Object.entries(connection).reduce(
-        ([room, isFound], [roomKey, roomValue]) => {
-          if (!isFound && roomValue.includes(socket.id)) {
-            return [roomKey, true];
-          }
+    socket.on(
+      "chat-message",
+      safely(async (data, sender) => {
+        const path = await pathOf(socket);
+        if (!path) return;
 
-          return [room, isFound];
-        },
-        ["", false]
-      );
-
-      if (found === true) {
-        if (messages[matchingRoom] === undefined) {
-          messages[matchingRoom] = [];
-        }
-
-        messages[matchingRoom].push({
+        await store.pushMessage(path, {
           sender: sender,
           data: data,
           "socket-id-sender": socket.id,
         });
-        if (messages[matchingRoom].length > MAX_ROOM_MESSAGES) {
-          messages[matchingRoom].splice(
-            0,
-            messages[matchingRoom].length - MAX_ROOM_MESSAGES
-          );
-        }
 
-        connection[matchingRoom].forEach((elem) => {
-          io.to(elem).emit("chat-message", data, sender, socket.id);
-        });
-      }
-    });
+        io.to(path).emit("chat-message", data, sender, socket.id);
+        await store.touch(path);
+      })
+    );
 
-    socket.on("disconnect", () => {
-      delete timeOnline[socket.id];
-
-      // Knocker gave up — clear the pending request and tell the host.
-      const knockPath = socket.data.knockPath;
-      if (knockPath && rooms[knockPath]?.pending[socket.id] !== undefined) {
-        delete rooms[knockPath].pending[socket.id];
-        if (rooms[knockPath].host) {
-          io.to(rooms[knockPath].host).emit("join-request-cancelled", socket.id);
-        }
-      }
-
-      const key = findRoomOf(socket.id);
-      if (!key) return;
-
-      for (let a = 0; a < connection[key].length; ++a) {
-        io.to(connection[key][a]).emit("user-left", socket.id);
-      }
-
-      const index = connection[key].indexOf(socket.id);
-      connection[key].splice(index, 1);
-
-      const meta = roomMeta(key);
-      delete meta.names[socket.id];
-      delete meta.media[socket.id];
-      delete meta.hands[socket.id];
-
-      if (connection[key].length === 0) {
-        // Everyone admitted has left. Anyone still knocking would wait forever
-        // with no host to let them in, so hand the empty room to the next in
-        // line — exactly what would have happened had they arrived to find it
-        // empty. Remaining knockers then answer to that new host.
-        const nextUp = Object.entries(meta.pending).find(([id]) =>
-          io.sockets.sockets.get(id)
-        );
-        if (nextUp) {
-          const [nextId, nextName] = nextUp;
-          const next = io.sockets.sockets.get(nextId);
-          delete meta.pending[nextId];
-          delete next.data.knockPath;
-          meta.host = null; // admitSocket promotes the first one in
-          admitSocket(next, key, nextName);
-          io.to(nextId).emit("admitted", publicMeta(key));
-          for (const [pendingId, pendingName] of Object.entries(meta.pending)) {
-            io.to(meta.host).emit("join-request", pendingId, pendingName);
+    socket.on(
+      "disconnect",
+      safely(async () => {
+        // Knocker gave up — clear the pending request and tell the host.
+        const knockPath = socket.data.knockPath;
+        if (knockPath) {
+          const removed = await store.removePending(knockPath, socket.id);
+          if (removed !== null) {
+            const host = await store.getHost(knockPath);
+            if (host) io.to(host).emit("join-request-cancelled", socket.id);
           }
+        }
+
+        const key = await pathOf(socket);
+        if (!key) return;
+
+        const before = await store.getMembers(key);
+        if (!before.includes(socket.id)) return;
+
+        for (const id of before) {
+          io.to(id).emit("user-left", socket.id);
+        }
+
+        const wasHost = (await store.getHost(key)) === socket.id;
+        await store.removeMember(key, socket.id);
+        const remaining = await store.getMembers(key);
+
+        if (remaining.length === 0) {
+          // Everyone admitted has left. Anyone still knocking would wait
+          // forever with no host to let them in, so hand the empty room to the
+          // next in line — exactly what would have happened had they arrived
+          // to find it empty. Remaining knockers answer to that new host.
+          const waiting = Object.entries(await store.getPending(key));
+
+          // fetchSockets goes through the adapter, so a knocker connected to
+          // another instance still counts as live.
+          let nextUp = null;
+          for (const entry of waiting) {
+            const live = await io.in(entry[0]).fetchSockets();
+            if (live.length > 0) {
+              nextUp = entry;
+              break;
+            }
+          }
+
+          if (nextUp) {
+            const [nextId, nextName] = nextUp;
+            await store.removePending(key, nextId);
+            await store.setHost(key, null); // addMember promotes the first one in
+            await admitSocket(nextId, key, nextName);
+            io.to(nextId).emit("admitted", await publicMeta(key));
+
+            const newHost = await store.getHost(key);
+            for (const [pendingId, pendingName] of Object.entries(
+              await store.getPending(key)
+            )) {
+              io.to(newHost).emit("join-request", pendingId, pendingName);
+            }
+            return;
+          }
+
+          await store.dispose(key);
           return;
         }
 
-        disposeRoom(key);
-        return;
-      }
-
-      // Host left — promote the longest-standing participant and hand
-      // over any queued join requests.
-      if (meta.host === socket.id) {
-        meta.host = connection[key][0];
-        io.to(key).emit("host-changed", meta.host, publicMeta(key));
-        for (const [pendingId, pendingName] of Object.entries(meta.pending)) {
-          io.to(meta.host).emit("join-request", pendingId, pendingName);
+        // Host left — promote the longest-standing participant and hand over
+        // any queued join requests.
+        if (wasHost) {
+          const newHost = remaining[0];
+          await store.setHost(key, newHost);
+          io.to(key).emit("host-changed", newHost, await publicMeta(key));
+          for (const [pendingId, pendingName] of Object.entries(
+            await store.getPending(key)
+          )) {
+            io.to(newHost).emit("join-request", pendingId, pendingName);
+          }
         }
-      }
-    });
+      })
+    );
   });
 
+  io.voxenStore = store;
   return io;
 };
 
