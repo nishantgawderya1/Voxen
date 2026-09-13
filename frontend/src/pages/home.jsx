@@ -7,6 +7,7 @@ import ThemeToggle from "../components/ThemeToggle.jsx";
 import Aurora from "../components/Aurora.jsx";
 import { Video, ArrowRight } from "../components/Icons.jsx";
 import { useSpotlight } from "../hooks/useInteractive.js";
+import UiIcon from "../components/UiIcon.jsx";
 
 function HomeComponent() {
   const router = useNavigate();
@@ -61,7 +62,7 @@ function HomeComponent() {
                 onClick={() => router("/history")}
                 className="hidden items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-line/[0.06] hover:text-text sm:flex"
               >
-                <span className="material-symbols-outlined text-[20px]">history</span>
+                <UiIcon name="history" size={20} />
                 History
               </button>
               <ThemeToggle />
@@ -70,7 +71,7 @@ function HomeComponent() {
                 title="Logout"
                 className="btn-ghost px-3 py-2 text-sm sm:px-4"
               >
-                <span className="material-symbols-outlined text-[18px]">logout</span>
+                <UiIcon name="logout" size={18} />
                 <span className="hidden sm:inline">Logout</span>
               </button>
             </div>
@@ -107,7 +108,7 @@ function HomeComponent() {
             <div className="relative">
               {/* Create */}
               <span className="chip mb-3">
-                <span className="material-symbols-outlined text-[14px] text-primary">bolt</span>
+                <UiIcon name="bolt" size={14} className="text-primary" />
                 New room
               </span>
               <input
@@ -139,7 +140,7 @@ function HomeComponent() {
 
               {/* Join */}
               <span className="chip mb-3">
-                <span className="material-symbols-outlined text-[14px] text-accent">login</span>
+                <UiIcon name="login" size={14} className="text-accent" />
                 Have a code?
               </span>
               <div className="flex flex-col gap-3 sm:flex-row">
@@ -168,7 +169,7 @@ function HomeComponent() {
               className="card card-hover group flex items-center gap-3 p-4 text-left"
             >
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary/25 via-primary/10 to-accent/20 text-primary">
-                <span className="material-symbols-outlined text-[20px]">history</span>
+                <UiIcon name="history" size={20} />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-medium text-text">View history</span>
@@ -190,9 +191,7 @@ function HomeComponent() {
                     : "from-accent/25 via-accent/10 to-mint/20 text-accent"
                 }`}
               >
-                <span className="material-symbols-outlined text-[20px]">
-                  {copied ? "check" : "link"}
-                </span>
+                <UiIcon name={copied ? "check" : "link"} size={20} />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-medium text-text">
@@ -202,14 +201,12 @@ function HomeComponent() {
                   {copied ? "Share it with anyone" : "Copy the app link"}
                 </span>
               </span>
-              <span className="material-symbols-outlined shrink-0 text-[18px] text-muted">
-                content_copy
-              </span>
+              <UiIcon name="content_copy" size={18} className="shrink-0 text-muted" />
             </button>
           </div>
 
           <p className="mt-5 text-center text-xs text-muted">
-            Meetings are end-to-end encrypted · Share the link to invite anyone
+            Video and audio stream peer-to-peer · Share the link to invite anyone
           </p>
         </div>
       </main>

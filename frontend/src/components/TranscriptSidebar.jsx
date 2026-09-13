@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import UiIcon from "./UiIcon.jsx";
 
 export default function TranscriptSidebar({ socket, open, onClose }) {
   const [lines, setLines] = useState([]);
@@ -33,7 +34,7 @@ export default function TranscriptSidebar({ socket, open, onClose }) {
       <div className="chatHeader">
         <span>Transcript</span>
         <button onClick={onClose} title="Close transcript">
-          <span className="material-symbols-outlined">close</span>
+          <UiIcon name="close" />
         </button>
       </div>
       <div className="chattingDisplay">

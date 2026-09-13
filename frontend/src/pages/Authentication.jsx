@@ -27,7 +27,7 @@ const GitHubIcon = () => (
 const perks = [
   "Real-time translation in 50+ languages",
   "Automatic transcripts & AI summaries",
-  "End-to-end encrypted meetings",
+  "Peer-to-peer encrypted video and audio",
 ];
 
 const Authentication = () => {
@@ -61,10 +61,11 @@ const Authentication = () => {
         setMessage("Logged in successfully");
         setOpen(true);
       } else {
+        // Registration now returns a session token and navigates to /home,
+        // so there is no second trip through the sign-in form.
         const result = await handleRegister(name, username, password);
-        setMessage(result.message);
+        setMessage(result.message || "Account created");
         setOpen(true);
-        setMode("signin");
       }
     } catch (err) {
       setMessage(err.response?.data?.message || "Something went wrong");
@@ -196,14 +197,28 @@ const Authentication = () => {
             </div>
 
             <div className="glass spotlight-card rounded-2xl p-6 sm:p-7">
-              {/* OAuth */}
+              {/* OAuth — no provider is wired up server-side yet, so these are
+                  disabled rather than left looking functional and doing nothing. */}
               <div className="grid gap-2.5">
-                <button type="button" className="btn-ghost w-full py-2.5 text-sm">
+                <button
+                  type="button"
+                  disabled
+                  title="Social sign-in isn't available yet"
+                  className="btn-ghost w-full cursor-not-allowed py-2.5 text-sm opacity-50"
+                >
                   <GoogleIcon /> Continue with Google
                 </button>
-                <button type="button" className="btn-ghost w-full py-2.5 text-sm">
+                <button
+                  type="button"
+                  disabled
+                  title="Social sign-in isn't available yet"
+                  className="btn-ghost w-full cursor-not-allowed py-2.5 text-sm opacity-50"
+                >
                   <GitHubIcon /> Continue with GitHub
                 </button>
+                <p className="text-center text-xs text-muted">
+                  Social sign-in is coming soon — use a username and password for now.
+                </p>
               </div>
 
               <div className="my-5 flex items-center gap-3">

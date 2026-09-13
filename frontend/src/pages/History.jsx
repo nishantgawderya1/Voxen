@@ -7,6 +7,7 @@ import ThemeToggle from "../components/ThemeToggle.jsx";
 import Aurora from "../components/Aurora.jsx";
 import { Video, ArrowRight } from "../components/Icons.jsx";
 import { useSpotlight } from "../hooks/useInteractive.js";
+import UiIcon from "../components/UiIcon.jsx";
 
 function HistoryComponent() {
   const router = useNavigate();
@@ -64,7 +65,7 @@ function HistoryComponent() {
                 title="Back to home"
                 className="btn-ghost px-3 py-2 text-sm sm:px-4"
               >
-                <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+                <UiIcon name="arrow_back" size={18} />
                 <span className="hidden sm:inline">Home</span>
               </button>
             </div>
@@ -98,7 +99,7 @@ function HistoryComponent() {
                 className="ring-conic animate-spinSlower absolute inset-0 rounded-full"
               />
               <span className="grid h-14 w-14 place-items-center rounded-full bg-primary/10 text-primary">
-                <span className="material-symbols-outlined text-3xl">history</span>
+                <UiIcon name="history" className="text-3xl" />
               </span>
             </span>
             <div>

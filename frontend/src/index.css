@@ -396,11 +396,6 @@ h6 {
   filter: blur(0);
 }
 
-.material-symbols-outlined {
-  font-variation-settings: "wght" 300, "GRAD" 0, "opsz" 24;
-  line-height: 1;
-}
-
 /* Brand logo assets are white-on-transparent; invert to dark in light mode. */
 .brand-logo {
   transition: filter 0.3s ease;

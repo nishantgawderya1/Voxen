@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import server_url from "../environment.js";
+import { getToken } from "../utils/auth.js";
 
 export default function useTranscription(stream, socket, roomId, enabled, language = "en") {
   useEffect(() => {
@@ -22,8 +23,10 @@ export default function useTranscription(stream, socket, roomId, enabled, langua
       form.append("language", language);
 
       try {
+        const token = getToken();
         const res = await fetch(`${server_url}/api/transcribe`, {
           method: "POST",
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
           body: form,
         });
         if (!res.ok) return;

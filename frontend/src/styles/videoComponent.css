@@ -198,8 +198,9 @@
   background-color: rgb(var(--c-danger));
 }
 
-.controlButton .material-symbols-outlined {
-  font-size: 24px;
+.controlButton svg {
+  width: 24px;
+  height: 24px;
 }
 
 /* Unread message badge */
@@ -614,8 +615,9 @@
   color: rgb(var(--c-danger));
 }
 
-.tileBadge .material-symbols-outlined {
-  font-size: 16px;
+.tileBadge svg {
+  width: 16px;
+  height: 16px;
 }
 
 .tileHost {
@@ -670,8 +672,9 @@
   border-color: rgb(var(--c-danger) / 0.35);
   color: rgb(var(--c-danger));
 }
-.preJoinToggle .material-symbols-outlined {
-  font-size: 20px;
+.preJoinToggle svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* ------------------------------------------------------------------ */
@@ -908,8 +911,9 @@
   filter: brightness(1.08);
 }
 
-.inviteBtn .material-symbols-outlined {
-  font-size: 17px;
+.inviteBtn svg {
+  width: 17px;
+  height: 17px;
 }
 
 /* Transcript panel — mirrors the chat panel on the left edge. */
@@ -1016,8 +1020,9 @@
     height: 46px;
   }
 
-  .controlButton .material-symbols-outlined {
-    font-size: 21px;
+  .controlButton svg {
+    width: 21px;
+    height: 21px;
   }
 
   .endCallButton {

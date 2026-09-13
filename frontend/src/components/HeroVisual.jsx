@@ -82,7 +82,9 @@ export default function HeroVisual() {
       </div>
 
       {/* status chips */}
-      <div className="pointer-events-none absolute -left-6 top-6 z-20 hidden sm:block">
+      {/* Sits just above the card's top edge — at top-6 it landed on the window
+          chrome row and covered the "· Product Sync" title. */}
+      <div className="pointer-events-none absolute -left-6 -top-4 z-20 hidden sm:block">
         <span className="chip animate-float">
           <span className="h-1.5 w-1.5 rounded-full bg-mint" /> Live · 4 languages
         </span>

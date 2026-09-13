@@ -1,3 +1,4 @@
+import UiIcon from "./UiIcon.jsx";
 // In-call participants list: names, host badge, mic/cam state, raised hands,
 // plus Admit/Deny rows for pending join requests when you are the host.
 export default function ParticipantsPanel({
@@ -22,7 +23,7 @@ export default function ParticipantsPanel({
           <span className="countPill">{ids.length}</span>
         </span>
         <button onClick={onClose} title="Close participants">
-          <span className="material-symbols-outlined">close</span>
+          <UiIcon name="close" />
         </button>
       </div>
 
@@ -62,20 +63,16 @@ export default function ParticipantsPanel({
               </div>
               <div className="participantState">
                 {meta.hands?.[id] && <span className="handFlag">✋</span>}
-                <span
-                  className={`material-symbols-outlined stateIcon ${
-                    media.audio ? "" : "off"
-                  }`}
-                >
-                  {media.audio ? "mic" : "mic_off"}
-                </span>
-                <span
-                  className={`material-symbols-outlined stateIcon ${
-                    media.video ? "" : "off"
-                  }`}
-                >
-                  {media.video ? "videocam" : "videocam_off"}
-                </span>
+                <UiIcon
+                  name={media.audio ? "mic" : "mic_off"}
+                  size={18}
+                  className={`stateIcon ${media.audio ? "" : "off"}`}
+                />
+                <UiIcon
+                  name={media.video ? "videocam" : "videocam_off"}
+                  size={18}
+                  className={`stateIcon ${media.video ? "" : "off"}`}
+                />
               </div>
             </div>
           );
