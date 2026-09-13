@@ -61,10 +61,11 @@ const Authentication = () => {
         setMessage("Logged in successfully");
         setOpen(true);
       } else {
+        // Registration now returns a session token and navigates to /home,
+        // so there is no second trip through the sign-in form.
         const result = await handleRegister(name, username, password);
-        setMessage(result.message);
+        setMessage(result.message || "Account created");
         setOpen(true);
-        setMode("signin");
       }
     } catch (err) {
       setMessage(err.response?.data?.message || "Something went wrong");

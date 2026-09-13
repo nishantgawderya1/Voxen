@@ -3,12 +3,31 @@ import { createContext, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import httpStatus from "http-status";
 import server_url from "../environment.js";
+import { getToken, setToken, clearToken } from "../utils/auth.js";
 
 export const AuthContext = createContext({});
 
 const client = axios.create({
   baseURL: `${server_url}/api/v1/users`,
 });
+
+// Tokens travel in the Authorization header rather than the body/query, so
+// they stay out of access logs and Referer headers.
+client.interceptors.request.use((cfg) => {
+  const token = getToken();
+  if (token) cfg.headers.Authorization = `Bearer ${token}`;
+  return cfg;
+});
+
+// A rejected token is only ever stale — drop it so the route guards send the
+// user to sign in instead of leaving them on a screen that can't load.
+client.interceptors.response.use(
+  (r) => r,
+  (err) => {
+    if (err.response?.status === httpStatus.UNAUTHORIZED) clearToken();
+    return Promise.reject(err);
+  }
+);
 
 export const AuthProvider = ({ children }) => {
   const authContext = useContext(AuthContext);
@@ -18,63 +37,38 @@ export const AuthProvider = ({ children }) => {
   const router = useNavigate();
 
   const handleRegister = async (name, username, password) => {
-    try {
-      let request = await client.post("/register", {
-        name: name,
-        username: username,
-        password: password,
-      });
-      return request.data;
-    } catch (err) {
-      throw err;
+    const request = await client.post("/register", { name, username, password });
+
+    // Registration signs the user in directly; no second round of credentials.
+    if (request.data?.token) {
+      setToken(request.data.token);
+      setUserData(request.data.user ?? {});
+      router("/home");
     }
+    return request.data;
   };
 
   const handleLogin = async (username, password) => {
-    try {
-      let request = await client.post("/login", {
-        username: username,
-        password: password,
-      });
+    const request = await client.post("/login", { username, password });
 
-      if (request.status === httpStatus.OK) {
-        localStorage.setItem("token", request.data.token);
-        router("/home");
-      }
-
-      return request.data;
-    } catch (err) {
-      throw err;
+    if (request.status === httpStatus.OK && request.data?.token) {
+      setToken(request.data.token);
+      setUserData(request.data.user ?? {});
+      router("/home");
     }
+
+    return request.data;
   };
 
-  let addToUserHistory = async (meetingCode, meetingName = "") => {
-    try {
-      let request = await client.post("/add_to_activity", {
-        token: localStorage.getItem("token"),
-        meeting_code: meetingCode,
-        meeting_name: meetingName,
-      });
-      return request;
-    } catch (e) {
-      throw e;
-    }
-  };
+  const addToUserHistory = async (meetingCode, meetingName = "") =>
+    client.post("/add_to_activity", {
+      meeting_code: meetingCode,
+      meeting_name: meetingName,
+    });
 
-  let getHistoryOfUser = async () => {
-    try {
-      let request = await client.get("/get_all_activity", {
-        params: { token: localStorage.getItem("token") },
-      });
-      return request.data;
-    } catch (e) {
-      // A 401 means the stored token is stale (tokens rotate on each login).
-      // Clear it so route guards send the user back to sign-in.
-      if (e.response?.status === 401) {
-        localStorage.removeItem("token");
-      }
-      throw e;
-    }
+  const getHistoryOfUser = async () => {
+    const request = await client.get("/get_all_activity");
+    return request.data;
   };
 
   const data = {
@@ -86,7 +80,5 @@ export const AuthProvider = ({ children }) => {
     getHistoryOfUser,
   };
 
-  return (
-    <AuthContext.Provider value={data}>{children}</AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={data}>{children}</AuthContext.Provider>;
 };

@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import { AuthContext } from "../contexts/AuthContext.jsx";
 import server_url from "../environment.js";
+import { iceServers } from "../iceConfig.js";
 import Brand from "../components/Brand.jsx";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 import Aurora from "../components/Aurora.jsx";
@@ -17,12 +18,8 @@ const REACTION_EMOJIS = ["👍", "❤️", "😂", "🎉", "👏"];
 
 var connections = {};
 
-const peerConfigConnections = {
-  iceServers: [
-    { urls: "stun:stun.l.google.com:19302" },
-    { urls: "stun:stun1.l.google.com:19302" },
-  ],
-};
+// STUN-only fails behind symmetric NAT; see iceConfig.js for TURN setup.
+const peerConfigConnections = { iceServers };
 
 // Audio capture constraints — echo cancellation + noise suppression kill the
 // feedback squeal and background hiss that raw `audio: true` lets through.

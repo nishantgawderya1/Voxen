@@ -1,4 +1,5 @@
 import { Server } from "socket.io";
+import config from "../config/env.js";
 
 // connection[path] stays the plain array of admitted socket ids so the
 // existing chat/signal loops keep working untouched.
@@ -50,9 +51,18 @@ const disposeRoom = (path) => {
 const connectToSocket = (server) => {
   const io = new Server(server, {
     cors: {
-      origin: "*",
+      // Same allowlist as the REST layer — `origin: "*"` with credentials let
+      // any page on the internet open a socket against this server.
+      origin(origin, cb) {
+        if (!origin) return cb(null, true);
+        if (!config.isProd && config.corsOrigins.length === 0) {
+          return cb(null, true);
+        }
+        return config.corsOrigins.includes(origin)
+          ? cb(null, true)
+          : cb(new Error("Origin not allowed by CORS"));
+      },
       methods: ["GET", "POST"],
-      allowedHeaders: ["*"],
       credentials: true,
     },
   });
