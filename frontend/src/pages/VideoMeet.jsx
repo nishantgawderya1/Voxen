@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import { AuthContext } from "../contexts/AuthContext.jsx";
@@ -113,6 +113,17 @@ export default function VideoMeet() {
   let meetingName = searchParams.get("name") || "";
   let { addToUserHistory } = useContext(AuthContext);
 
+  // The room key must be the meeting code and nothing else. Deriving it from
+  // window.location.href meant `?name=Standup` minted a room separate from the
+  // bare `/<code>` an invitee opens, so host and guest each sat alone in their
+  // own room. A trailing slash or localhost-vs-127.0.0.1 split them the same way.
+  const roomId = useMemo(() => {
+    const code = (url || "").trim().toLowerCase();
+    return code
+      ? `room:${code}`
+      : `path:${window.location.pathname.replace(/\/+$/, "")}`;
+  }, [url]);
+
   let [messages, setMessages] = useState([]);
   let [message, setMessage] = useState("");
   let [newMessages, setNewMessages] = useState(0);
@@ -176,6 +187,27 @@ export default function VideoMeet() {
     facingMode: { ideal: facingModeRef.current },
   });
 
+  // The self-view element exists only in some phases — the waiting room renders
+  // none — so every assignment has to tolerate a missing node rather than throw.
+  const attachLocalPreview = (stream) => {
+    if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+  };
+
+  // `localVideoRef` is attached to a different <video> in each phase (the lobby
+  // preview vs the in-call self-view tile). Every srcObject assignment targets
+  // whichever node happened to be mounted at that moment, so the phase flip
+  // remounted the element and left the new one with no stream — a black
+  // self-view until something else re-ran the assignment. Re-attach on change.
+  useEffect(() => {
+    const el = localVideoRef.current;
+    if (!el || !window.localStream) return;
+    if (el.srcObject !== window.localStream) {
+      el.srcObject = window.localStream;
+    }
+    // Autoplay can reject if the element remounts mid-gesture; retry silently.
+    el.play?.().catch(() => {});
+  }, [phase, callStream, video, screen]);
+
   // Elapsed-time ticker, runs while in the call.
   useEffect(() => {
     if (phase !== "call") return;
@@ -223,7 +255,7 @@ export default function VideoMeet() {
     }
 
     window.localStream = stream;
-    localVideoRef.current.srcObject = stream;
+    attachLocalPreview(stream);
 
     for (let id in connections) {
       if (id === socketIdRef.current) continue;
@@ -251,14 +283,14 @@ export default function VideoMeet() {
           setAudio(false);
 
           try {
-            let tracks = localVideoRef.current.srcObject.getTracks();
+            let tracks = localVideoRef.current?.srcObject?.getTracks() ?? [];
             tracks.forEach((track) => track.stop());
           } catch (e) {
             console.log(e);
           }
 
           window.localStream = blackSilence();
-          localVideoRef.current.srcObject = window.localStream;
+          attachLocalPreview(window.localStream);
 
           for (let id in connections) {
             attachStream(connections[id], window.localStream);
@@ -291,7 +323,7 @@ export default function VideoMeet() {
         .catch((err) => console.log(err));
     } else {
       try {
-        let tracks = localVideoRef.current.srcObject.getTracks();
+        let tracks = localVideoRef.current?.srcObject?.getTracks() ?? [];
         tracks.forEach((track) => track.stop());
       } catch (err) {
         console.log(err);
@@ -363,7 +395,7 @@ export default function VideoMeet() {
     socketRef.current.on("connect", () => {
       socketRef.current.emit(
         "join-call",
-        window.location.href,
+        roomId,
         (username || "Guest").trim()
       );
 
@@ -564,7 +596,7 @@ export default function VideoMeet() {
     }
 
     window.localStream = stream;
-    localVideoRef.current.srcObject = stream;
+    attachLocalPreview(stream);
 
     for (let id in connections) {
       if (id === socketIdRef.current) continue;
@@ -591,14 +623,14 @@ export default function VideoMeet() {
           setScreen(false);
 
           try {
-            let tracks = localVideoRef.current.srcObject.getTracks();
+            let tracks = localVideoRef.current?.srcObject?.getTracks() ?? [];
             tracks.forEach((track) => track.stop());
           } catch (e) {
             console.log(e);
           }
 
           window.localStream = blackSilence();
-          localVideoRef.current.srcObject = window.localStream;
+          attachLocalPreview(window.localStream);
 
           getUserMedia();
         })
@@ -650,9 +682,14 @@ export default function VideoMeet() {
   };
 
   let handleEndCall = () => {
+    // Stop the stream itself rather than whatever the preview element happens
+    // to hold — if the element is unmounted the camera light would stay on.
     try {
-      let tracks = localVideoRef.current.srcObject.getTracks();
-      tracks.forEach((track) => track.stop());
+      const live = [
+        ...(window.localStream?.getTracks() ?? []),
+        ...(localVideoRef.current?.srcObject?.getTracks() ?? []),
+      ];
+      new Set(live).forEach((track) => track.stop());
     } catch (e) {
       console.log(e);
     }
@@ -765,7 +802,7 @@ export default function VideoMeet() {
   useTranscription(
     callStream,
     socketRef.current,
-    window.location.href,
+    roomId,
     phase === "call" && !!callStream
   );
 

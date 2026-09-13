@@ -35,6 +35,18 @@ const findRoomOf = (socketId) => {
   return null;
 };
 
+// Cap replayed history so a long-running room can't grow without bound.
+const MAX_ROOM_MESSAGES = 200;
+
+// Every per-room map has to be torn down together. Leaving `messages[path]`
+// behind when the room emptied meant the next meeting to reuse that code was
+// served the previous meeting's chat on join.
+const disposeRoom = (path) => {
+  delete connection[path];
+  delete rooms[path];
+  delete messages[path];
+};
+
 const connectToSocket = (server) => {
   const io = new Server(server, {
     cors: {
@@ -191,7 +203,12 @@ const connectToSocket = (server) => {
           data: data,
           "socket-id-sender": socket.id,
         });
-        console.log("message", matchingRoom, ":", sender, data);
+        if (messages[matchingRoom].length > MAX_ROOM_MESSAGES) {
+          messages[matchingRoom].splice(
+            0,
+            messages[matchingRoom].length - MAX_ROOM_MESSAGES
+          );
+        }
 
         connection[matchingRoom].forEach((elem) => {
           io.to(elem).emit("chat-message", data, sender, socket.id);
@@ -200,6 +217,8 @@ const connectToSocket = (server) => {
     });
 
     socket.on("disconnect", () => {
+      delete timeOnline[socket.id];
+
       // Knocker gave up — clear the pending request and tell the host.
       const knockPath = socket.data.knockPath;
       if (knockPath && rooms[knockPath]?.pending[socket.id] !== undefined) {
@@ -225,8 +244,28 @@ const connectToSocket = (server) => {
       delete meta.hands[socket.id];
 
       if (connection[key].length === 0) {
-        delete connection[key];
-        delete rooms[key];
+        // Everyone admitted has left. Anyone still knocking would wait forever
+        // with no host to let them in, so hand the empty room to the next in
+        // line — exactly what would have happened had they arrived to find it
+        // empty. Remaining knockers then answer to that new host.
+        const nextUp = Object.entries(meta.pending).find(([id]) =>
+          io.sockets.sockets.get(id)
+        );
+        if (nextUp) {
+          const [nextId, nextName] = nextUp;
+          const next = io.sockets.sockets.get(nextId);
+          delete meta.pending[nextId];
+          delete next.data.knockPath;
+          meta.host = null; // admitSocket promotes the first one in
+          admitSocket(next, key, nextName);
+          io.to(nextId).emit("admitted", publicMeta(key));
+          for (const [pendingId, pendingName] of Object.entries(meta.pending)) {
+            io.to(meta.host).emit("join-request", pendingId, pendingName);
+          }
+          return;
+        }
+
+        disposeRoom(key);
         return;
       }
 
