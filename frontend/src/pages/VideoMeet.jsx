@@ -8,6 +8,7 @@ import Brand from "../components/Brand.jsx";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 import Aurora from "../components/Aurora.jsx";
 import { isAuthenticated } from "../utils/auth.js";
+import { roomKeyFor } from "../utils/room.js";
 import useTranscription from "../hooks/useTranscription.js";
 import TranscriptSidebar from "../components/TranscriptSidebar.jsx";
 import ParticipantsPanel from "../components/ParticipantsPanel.jsx";
@@ -111,16 +112,12 @@ export default function VideoMeet() {
   let meetingName = searchParams.get("name") || "";
   let { addToUserHistory } = useContext(AuthContext);
 
-  // The room key must be the meeting code and nothing else. Deriving it from
-  // window.location.href meant `?name=Standup` minted a room separate from the
-  // bare `/<code>` an invitee opens, so host and guest each sat alone in their
-  // own room. A trailing slash or localhost-vs-127.0.0.1 split them the same way.
-  const roomId = useMemo(() => {
-    const code = (url || "").trim().toLowerCase();
-    return code
-      ? `room:${code}`
-      : `path:${window.location.pathname.replace(/\/+$/, "")}`;
-  }, [url]);
+  // Keyed on the meeting code alone — see utils/room.js for why the URL isn't
+  // usable as a room identity.
+  const roomId = useMemo(
+    () => roomKeyFor(url, window.location.pathname),
+    [url]
+  );
 
   let [messages, setMessages] = useState([]);
   let [message, setMessage] = useState("");

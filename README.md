@@ -33,8 +33,12 @@ elsewhere with `VITE_SERVER_URL`.
 ## Tests
 
 ```bash
-cd backend && npm test
+cd backend  && npm test    # 47 tests
+cd frontend && npm test    # 22 tests
 ```
+
+Both run in CI on every push and pull request, along with the lint and the
+production build.
 
 Covers the input validators, the JWT auth middleware, the socket room
 lifecycle (admission, host transfer, chat isolation between meetings that
@@ -109,5 +113,4 @@ meeting (`/abc?name=Standup`) and a bare link (`/abc`) are the same room.
 - **Media is a full mesh.** Every participant sends their stream to every
   other participant, which stops being practical past a handful of people. A
   larger call needs an SFU.
-- **No frontend test suite yet** — only the backend is covered.
 - Social sign-in buttons are disabled; there is no OAuth provider wired up.

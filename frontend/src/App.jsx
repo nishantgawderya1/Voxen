@@ -5,6 +5,7 @@ import Features from "./pages/Features.jsx";
 import Pricing from "./pages/Pricing.jsx";
 import MarketingLayout from "./components/MarketingLayout.jsx";
 import Loader from "./components/Loader.jsx";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import { AuthProvider } from "./contexts/AuthContext.jsx";
 import "./App.css";
 
@@ -25,22 +26,24 @@ const Home = () => (
 function App() {
   return (
     <div className="App">
-      <Router>
-        <AuthProvider>
-          <Suspense fallback={<Loader label="Loading Voxen…" />}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/features" element={<Home />} />
-              <Route path="/pricing" element={<Home />} />
-              <Route path="/auth" element={<Authentication />} />
-              <Route path="/home" element={<HomePage />} />
-              <Route path="/history" element={<History />} />
-              <Route path="/meet" element={<VideoMeet />} />
-              <Route path="/:url" element={<VideoMeet />} />
-            </Routes>
-          </Suspense>
-        </AuthProvider>
-      </Router>
+      <ErrorBoundary>
+        <Router>
+          <AuthProvider>
+            <Suspense fallback={<Loader label="Loading Voxen…" />}>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/features" element={<Home />} />
+                <Route path="/pricing" element={<Home />} />
+                <Route path="/auth" element={<Authentication />} />
+                <Route path="/home" element={<HomePage />} />
+                <Route path="/history" element={<History />} />
+                <Route path="/meet" element={<VideoMeet />} />
+                <Route path="/:url" element={<VideoMeet />} />
+              </Routes>
+            </Suspense>
+          </AuthProvider>
+        </Router>
+      </ErrorBoundary>
     </div>
   );
 }
