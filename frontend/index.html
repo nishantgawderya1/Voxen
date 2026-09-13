@@ -110,10 +110,12 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500&display=swap"
       rel="stylesheet"
     />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0&display=swap"
-      rel="stylesheet"
-    />
+    <!-- The Material Symbols icon font used to be loaded here. Icons now ship
+         with the bundle as inline SVG (src/components/UiIcon.jsx): when this
+         stylesheet was unreachable the ligatures never resolved and every
+         button rendered its raw name, which collapsed the in-call control bar
+         into unusable overlapping text. Text fonts below degrade gracefully to
+         the system stack, so they stay remote. -->
     <style>
       /* Pre-mount loader shown before the JS bundle boots (no blank flash).
          React replaces #root's contents on mount, removing it automatically. */

@@ -47,8 +47,8 @@ const features = [
   },
   {
     icon: Lock,
-    title: "End-to-end security",
-    body: "Encrypted from the first word. Privacy is built into the core.",
+    title: "Encrypted media",
+    body: "Video and audio stream directly between participants over WebRTC's encrypted transport — they never pass through our servers.",
     span: "md:col-span-2",
     accent: "mint",
     art: "security",

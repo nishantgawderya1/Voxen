@@ -1,4 +1,5 @@
 import { useState } from "react";
+import UiIcon from "./UiIcon.jsx";
 
 // Share a meeting: full link, room code, native share sheet on mobile.
 export default function InviteModal({ open, onClose, roomCode, meetingName }) {
@@ -38,7 +39,7 @@ export default function InviteModal({ open, onClose, roomCode, meetingName }) {
         <div className="inviteHeader">
           <span>Invite people</span>
           <button onClick={onClose} title="Close">
-            <span className="material-symbols-outlined">close</span>
+            <UiIcon name="close" />
           </button>
         </div>
 
@@ -52,16 +53,16 @@ export default function InviteModal({ open, onClose, roomCode, meetingName }) {
 
         <div className="inviteActions">
           <button className="inviteBtn primary" onClick={() => copy(link, "link")}>
-            <span className="material-symbols-outlined">link</span>
+            <UiIcon name="link" />
             {copied === "link" ? "Copied!" : "Copy link"}
           </button>
           <button className="inviteBtn" onClick={() => copy(roomCode, "code")}>
-            <span className="material-symbols-outlined">pin</span>
+            <UiIcon name="pin" />
             {copied === "code" ? "Copied!" : "Copy code"}
           </button>
           {typeof navigator.share === "function" && (
             <button className="inviteBtn" onClick={nativeShare}>
-              <span className="material-symbols-outlined">share</span>
+              <UiIcon name="share" />
               Share
             </button>
           )}
